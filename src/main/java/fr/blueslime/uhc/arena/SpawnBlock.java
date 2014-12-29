@@ -1,0 +1,73 @@
+package fr.blueslime.uhc.arena;
+
+import com.sk89q.worldedit.CuboidClipboard;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.data.DataException;
+import com.sk89q.worldedit.schematic.SchematicFormat;
+import fr.blueslime.uhc.UHC;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+
+public class SpawnBlock
+{
+    public UHC plugin;
+    public List<Location> save = new ArrayList<>();
+
+    public SpawnBlock(UHC pl)
+    {
+        this.plugin = pl;
+    }
+
+    public void generate()
+    {
+        File file = new File(this.plugin.getDataFolder(), "/lobby.schematic");
+        
+        if (file.exists())
+        {
+            try
+            {
+                Vector v = new Vector(0, 200, 0);
+                World worldf = Bukkit.getWorld("world");
+                BukkitWorld BWf = new BukkitWorld(worldf);
+                EditSession es = new EditSession(BWf, 2000000);
+                es.setFastMode(true);
+                CuboidClipboard c1 = SchematicFormat.MCEDIT.load(file);
+                c1.paste(es, v, true);
+            }
+            catch (MaxChangedBlocksException ex)
+            {
+                ex.printStackTrace();
+            }
+            catch (IOException | DataException ex)
+            {
+                ex.printStackTrace();
+            }
+
+            Bukkit.getWorld("world").loadChunk(0, 0);
+        }
+        else
+        {
+            Bukkit.getLogger().severe(("File does not exist."));
+        }
+    }
+
+    public void remove() {
+        /*for(Location b : save)
+         {
+         Location n = b;
+         n.setY(b.getY()-3);
+			
+         Block bl = n.getBlock();
+         bl.setType(Material.AIR);
+         n.getWorld().refreshChunk(n.getBlockX(), n.getBlockZ());
+         }*/
+    }
+}
