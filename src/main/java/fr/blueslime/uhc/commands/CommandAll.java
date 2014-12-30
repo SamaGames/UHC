@@ -20,7 +20,7 @@ public class CommandAll implements CommandExecutor
         {
             Player sender = (Player) cs;
             
-            if(UHC.getPlugin().getArena().isGameStarted() && UHC.getPlugin().getArena().hasPlayer(sender.getUniqueId()))
+            if(UHC.getPlugin().getArenaTeam().isGameStarted() && UHC.getPlugin().getArenaTeam().hasPlayer(sender.getUniqueId()))
             {
                 if(strings.length != 0)
                 {
@@ -43,7 +43,7 @@ public class CommandAll implements CommandExecutor
                         }
                     }
                     
-                    ArenaPlayer aPlayer = UHC.getPlugin().getArena().getPlayer(sender.getUniqueId());
+                    ArenaPlayer aPlayer = UHC.getPlugin().getArenaTeam().getPlayer(sender.getUniqueId());
                     StringBuilder messageBuilder = new StringBuilder();
 
                     messageBuilder.append(aPlayer.getTeam().getChatColor()).append("[").append(aPlayer.getTeam().getName()).append(aPlayer.getTeam().getChatColor()).append("]").append(" ");

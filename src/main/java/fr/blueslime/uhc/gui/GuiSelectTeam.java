@@ -2,7 +2,7 @@ package fr.blueslime.uhc.gui;
 
 import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
-import fr.blueslime.uhc.arena.Arena;
+import fr.blueslime.uhc.arena.ArenaGameTeam;
 import fr.blueslime.uhc.arena.ArenaPlayer;
 import fr.blueslime.uhc.arena.ArenaTeam;
 import fr.blueslime.uhc.utils.ItemUtils;
@@ -54,20 +54,20 @@ public class GuiSelectTeam implements Gui
         {
             ex.printStackTrace();
         }
-                
+        
         int last = 10;
         
-        for(ArenaTeam team : UHC.getPlugin().getArena().getTeamAlive())
+        for(ArenaTeam team : UHC.getPlugin().getArenaTeam().getTeamAlive())
         {
             String name;
             
-            if(team.getIcon().getType() == Material.DIAMOND_BLOCK)
+            if(team.getIcon().getType() == Material.COOKIE)
             {
                 name = team.getChatColor() + "Equipe " + team.getName() + team.getChatColor() + " [" + team.getPlayers().size() + "/∞]";
             }
             else
             {
-                name = team.getChatColor() + "Equipe " + team.getName() + " [" + team.getPlayers().size() + "/3]";
+                name = team.getChatColor() + "Equipe " + team.getName() + " [" + team.getPlayers().size() + "/" + UHC.getPlugin().getArenaTeam().getMaxPlayersInTeam() + "]";
             }
             
             ArrayList<String> lores = new ArrayList<>();
@@ -113,7 +113,7 @@ public class GuiSelectTeam implements Gui
     @Override
     public void onClic(final Player player, ItemStack stack)
     {
-        Arena arena = UHC.getPlugin().getArena();
+        ArenaGameTeam arena = UHC.getPlugin().getArenaTeam();
         
         if(stack.getType() == Material.WOOL)
         {
@@ -130,7 +130,7 @@ public class GuiSelectTeam implements Gui
                             if(arena.getPlayer(player.getUniqueId()).hasTeam())
                                 arena.getPlayer(player.getUniqueId()).getTeam().leave(arena.getPlayer(player.getUniqueId()));
 
-                            team.join(UHC.getPlugin().getArena().getPlayer(player.getUniqueId()));
+                            team.join(UHC.getPlugin().getArenaTeam().getPlayer(player.getUniqueId()));
                             player.sendMessage(Messages.teamJoined.replace("${TEAM}", team.getChatColor() + team.getName()) + ChatColor.YELLOW);
                         }
                         else
@@ -149,7 +149,7 @@ public class GuiSelectTeam implements Gui
             
             UHC.getPlugin().openGui(player, new GuiSelectTeam());
         }
-        else if(stack.getType() == Material.DIAMOND_BLOCK)
+        else if(stack.getType() == Material.COOKIE)
         {
             player.sendMessage(Messages.adminOnly);
         }
@@ -161,7 +161,7 @@ public class GuiSelectTeam implements Gui
 
                 if(aPlayer.hasTeam())
                 {
-                    if(aPlayer.getTeam().getIcon().getType() != Material.DIAMOND_BLOCK)
+                    if(aPlayer.getTeam().getIcon().getType() != Material.COOKIE)
                     {
                         final Block block = aPlayer.getPlayer().getWorld().getBlockAt(0, 250, aPlayer.getTeam().getNumber());
                         block.setTypeIdAndData(Material.SIGN_POST.getId(), (byte) 2, false);
@@ -258,7 +258,7 @@ public class GuiSelectTeam implements Gui
                 {
                     player.sendMessage(Messages.playersAvailable);
                     
-                    for(ArenaPlayer aInvite : UHC.getPlugin().getArena().getArenaPlayers())
+                    for(ArenaPlayer aInvite : UHC.getPlugin().getArenaTeam().getArenaPlayers())
                     {
                         if(!aInvite.hasTeam())
                         {

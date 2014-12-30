@@ -2,3 +2,4 @@ com-port: 1234
 BungeeName: lol
 ArenaID: cea6d4e8-7e3b-11e4-b116-123b93f75cba
 max-players-in-team: 3
+team-mode: true

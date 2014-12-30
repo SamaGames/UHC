@@ -27,7 +27,7 @@ public class ArenaTeam
     private boolean locked;
     private UUID nameChanger;
     
-    public ArenaTeam(Arena arena, int number, int maxPlayers, String name, ChatColor color, ItemStack icon, double spawnX, double spawnZ)
+    public ArenaTeam(ArenaGameTeam arena, int number, int maxPlayers, String name, ChatColor color, ItemStack icon, double spawnX, double spawnZ)
     {
         this.originName = name;
         this.number = number;
@@ -120,7 +120,7 @@ public class ArenaTeam
         
         if(this.players.isEmpty())
         {
-            UHC.getPlugin().getArena().loseTeam(this);
+            UHC.getPlugin().getArenaTeam().loseTeam(this);
         }
     }
     

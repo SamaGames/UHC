@@ -1,0 +1,23 @@
+package fr.blueslime.uhc.events.solo;
+
+import fr.blueslime.uhc.events.common.*;
+import fr.blueslime.uhc.UHC;
+import net.samagames.gameapi.events.FinishJoinPlayerEvent;
+import org.bukkit.ChatColor;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
+public class UHCFinishJoinPlayerEvent implements Listener
+{
+    @EventHandler
+    public void event(FinishJoinPlayerEvent event)
+    {
+        if(UHC.getPlugin().getArenaSolo().getArenaPlayers().size() >= UHC.getPlugin().getArenaSolo().getTotalMaxPlayers())
+        {
+            event.refuse(ChatColor.RED + "L'arène est pleine.");
+            return;
+        }
+        
+        UHC.getPlugin().getArenaSolo().joinPlayer(event.getPlayer());
+    }
+}

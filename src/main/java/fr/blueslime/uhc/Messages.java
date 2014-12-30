@@ -8,17 +8,8 @@ public class Messages
     public static final String PLUGIN_TAG = GameAPI.getCoherenceMachine("KTP").getGameTag();
     public static final String DEBUG_TAG = PLUGIN_TAG + ChatColor.GRAY + "[" + ChatColor.RED + "DEBUG" + ChatColor.GRAY + "] " + ChatColor.RESET;
     
-    public static String notEnougthPlayers = PLUGIN_TAG + ChatColor.RED + "Il n'y a plus assez de joueurs pour commencer.";
-    public static String startIn = PLUGIN_TAG + ChatColor.YELLOW + "Début du jeu dans " + ChatColor.AQUA + "${TIME}";
-    public static String alreadyInArena = ChatColor.RED + "Vous êtes dèjà dans l'arène. Ceci est une erreur, merci de nous la signaler.";
-    public static String arenaFull = ChatColor.RED + "L'arène est pleine.";
-    public static String alreadyInGame = ChatColor.RED + "Vous êtes dèjà en jeu dans une autre arène.";
-    public static String joinArena = PLUGIN_TAG + ChatColor.GREEN + "Vous avez rejoint le jeu.";
-    public static String playerJoinedArena = PLUGIN_TAG + ChatColor.YELLOW + "${PSEUDO}" + ChatColor.YELLOW + " a rejoint la partie ! " + ChatColor.DARK_GRAY + "[" + ChatColor.RED + "${JOUEURS}" + ChatColor.DARK_GRAY + "/" + ChatColor.RED + "${JOUEURS_MAX}" + ChatColor.DARK_GRAY + "]";
-    public static String gameStart = ChatColor.GOLD + "La partie commence !";
     public static String teamEliminated = PLUGIN_TAG + "L'équipe ${TEAM} est éliminée !";
     public static String playerQuitted = PLUGIN_TAG + "${PLAYER} s'est enfui du jeu :(";
-    public static String win = PLUGIN_TAG + "L'équipe ${TEAM} gagne !";
     public static String reducting = PLUGIN_TAG + "Réduction progressive de la bordure en cours en ${COORDS}. Courez !";
     public static String reducted = PLUGIN_TAG + "La bordure a finie d'être réduite en ${COORDS} !";
     public static String damageActivated = PLUGIN_TAG + ChatColor.RED + "Les dégats sont maintenant activés !";
@@ -40,4 +31,6 @@ public class Messages
     public static String teamLockedJoin = PLUGIN_TAG + ChatColor.RED + "L'équipe choisie est fermée !";
     public static String teamLeaved = PLUGIN_TAG + ChatColor.GREEN + "Vous avez quitté l'équipe !";
     public static String dontTouchHer = PLUGIN_TAG + ChatColor.RED + ChatColor.BOLD + "NE TOUCHE PAS A MAITE !";
+    public static String endOfGameAt = PLUGIN_TAG + ChatColor.RED + "Fin de la partie forcée à la fin de l'épisode !";
+    public static String endOfGameIn = PLUGIN_TAG + ChatColor.RED + "Fin de la partie forcée dans " + ChatColor.AQUA + "${TIME}";
 }

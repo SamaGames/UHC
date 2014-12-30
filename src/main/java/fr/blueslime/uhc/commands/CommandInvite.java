@@ -14,12 +14,12 @@ public class CommandInvite
     {
         if(cs instanceof Player)
         {
-            if(!UHC.getPlugin().getArena().isGameStarted())
+            if(!UHC.getPlugin().getArenaTeam().isGameStarted())
             {
                 String inviter = strings[1];
                 String invited = strings[2];
-                ArenaPlayer aInviter = UHC.getPlugin().getArena().getPlayer(Bukkit.getPlayer(inviter).getUniqueId());
-                ArenaPlayer aInvited = UHC.getPlugin().getArena().getPlayer(Bukkit.getPlayer(invited).getUniqueId());
+                ArenaPlayer aInviter = UHC.getPlugin().getArenaTeam().getPlayer(Bukkit.getPlayer(inviter).getUniqueId());
+                ArenaPlayer aInvited = UHC.getPlugin().getArenaTeam().getPlayer(Bukkit.getPlayer(invited).getUniqueId());
                 
                 if(aInviter.hasTeam() && !aInviter.getTeam().isFull())
                 {

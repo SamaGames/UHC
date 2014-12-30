@@ -16,12 +16,12 @@ public class CommandJoin
     {
         if(cs instanceof Player)
         {
-            if(!UHC.getPlugin().getArena().isGameStarted())
+            if(!UHC.getPlugin().getArenaTeam().isGameStarted())
             {
                 String team = strings[1];
                 String player = strings[2];
-                ArenaPlayer aPlayer = UHC.getPlugin().getArena().getPlayer(Bukkit.getPlayer(player).getUniqueId());
-                ArenaTeam aTeam = UHC.getPlugin().getArena().getTeamByNumber(Integer.valueOf(team));
+                ArenaPlayer aPlayer = UHC.getPlugin().getArenaTeam().getPlayer(Bukkit.getPlayer(player).getUniqueId());
+                ArenaTeam aTeam = UHC.getPlugin().getArenaTeam().getTeamByNumber(Integer.valueOf(team));
                 
                 if(!aPlayer.hasTeam())
                 {

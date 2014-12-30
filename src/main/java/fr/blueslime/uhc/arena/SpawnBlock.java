@@ -4,6 +4,7 @@ import com.sk89q.worldedit.CuboidClipboard;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.data.DataException;
 import com.sk89q.worldedit.schematic.SchematicFormat;
@@ -19,7 +20,7 @@ import org.bukkit.World;
 public class SpawnBlock
 {
     public UHC plugin;
-    public List<Location> save = new ArrayList<>();
+    public EditSession es;
 
     public SpawnBlock(UHC pl)
     {
@@ -37,10 +38,10 @@ public class SpawnBlock
                 Vector v = new Vector(0, 200, 0);
                 World worldf = Bukkit.getWorld("world");
                 BukkitWorld BWf = new BukkitWorld(worldf);
-                EditSession es = new EditSession(BWf, 2000000);
-                es.setFastMode(true);
+                this.es = new EditSession(BWf, 2000000);
+                this.es.setFastMode(true);
                 CuboidClipboard c1 = SchematicFormat.MCEDIT.load(file);
-                c1.paste(es, v, true);
+                c1.paste(this.es, v, true);
             }
             catch (MaxChangedBlocksException ex)
             {
@@ -58,16 +59,9 @@ public class SpawnBlock
             Bukkit.getLogger().severe(("File does not exist."));
         }
     }
-
-    public void remove() {
-        /*for(Location b : save)
-         {
-         Location n = b;
-         n.setY(b.getY()-3);
-			
-         Block bl = n.getBlock();
-         bl.setType(Material.AIR);
-         n.getWorld().refreshChunk(n.getBlockX(), n.getBlockZ());
-         }*/
+    
+    public void remove()
+    {
+        this.es.undo(this.es);
     }
 }

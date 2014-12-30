@@ -4,6 +4,7 @@
     <groupId>fr.blueslime</groupId>
     <artifactId>UHC</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <name>UHC</name>
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
