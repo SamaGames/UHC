@@ -51,6 +51,7 @@ public class ArenaGameSolo implements GameArena
     private final ArrayList<UUID> arenaSpectators;
     private final HashMap<UUID, Integer> playersCrash;
     private final HashMap<UUID, Integer> playersCrashTimer;
+    private final ArrayList<Location> spawns;
     private final int maxPlayers, minPlayers;
     private final Scoreboard board;
     private final NumberFormat formatter;
@@ -100,18 +101,32 @@ public class ArenaGameSolo implements GameArena
         this.board = Bukkit.getScoreboardManager().getNewScoreboard();
         this.board.registerNewObjective("uhc", "dummy");
         
-        ArrayList<Location> spawns = new ArrayList<>();
+        this.spawns = new ArrayList<>();
+        this.spawns.add(new Location(this.world, 0, 200, 400));
+        this.spawns.add(new Location(this.world, 0, 200, 800));
+        this.spawns.add(new Location(this.world, 400, 200, 0));
+        this.spawns.add(new Location(this.world, 800, 200, 400));
+        this.spawns.add(new Location(this.world, 400, 200, 800));
+        this.spawns.add(new Location(this.world, 800, 200, 800));
+        this.spawns.add(new Location(this.world, 400, 200, 400));
+        this.spawns.add(new Location(this.world, 0, 200, -400));
+        this.spawns.add(new Location(this.world, 0, 200, -800));
+        this.spawns.add(new Location(this.world, -400, 200, 0));
+        this.spawns.add(new Location(this.world, -800, 200, 0));
+        this.spawns.add(new Location(this.world, -800, 200, -400));
+        this.spawns.add(new Location(this.world, -400, 200, -800));
+        this.spawns.add(new Location(this.world, -800, 200, -800));
+        this.spawns.add(new Location(this.world, -400, 200, -400));
+        this.spawns.add(new Location(this.world, 800, 200, -400));
+        this.spawns.add(new Location(this.world, -800, 200, 400));
+        this.spawns.add(new Location(this.world, 400, 200, -800));
+        this.spawns.add(new Location(this.world, -400, 200, 800));
+        this.spawns.add(new Location(this.world, -800, 200, 800));
+        this.spawns.add(new Location(this.world, 800, 200, -800));
+        this.spawns.add(new Location(this.world, 400, 200, -400));
+        this.spawns.add(new Location(this.world, -400, 200, 400));
         
-        spawns.add(new Location(this.world, -500, 200, -500));
-        spawns.add(new Location(this.world, -500, 200, 0));
-        spawns.add(new Location(this.world, -500, 200, +500));
-        spawns.add(new Location(this.world, 0, 200, -500));
-        spawns.add(new Location(this.world, 0, 200, +500));
-        spawns.add(new Location(this.world, +500, 200, -500));
-        spawns.add(new Location(this.world, +500, 200, 0));
-        spawns.add(new Location(this.world, +500, 200, +500));
-        
-        Collections.shuffle(spawns, new Random(System.nanoTime()));
+        Collections.shuffle(this.spawns, new Random(System.nanoTime()));
         
         Objective healthObjective = this.board.registerNewObjective("Vie", "health");
         healthObjective.setDisplayName("Vie");
@@ -194,8 +209,9 @@ public class ArenaGameSolo implements GameArena
         
         ArrayList<ArenaPlayer> remove = new ArrayList<>();
                         
-        for(ArenaPlayer player : this.arenaPlayers)
+        for(int i = 0; i < this.arenaPlayers.size(); i++)
         {
+            ArenaPlayer player = this.arenaPlayers.get(i);
             Player p = player.getPlayer().getPlayer();
             
             if(p == null)
@@ -211,7 +227,7 @@ public class ArenaGameSolo implements GameArena
             
             System.out.println("Teleporting player: " + p.getName());
             
-            p.teleport(player.getTeam().getSpawnLocation());
+            p.teleport(this.spawns.get(i));
             p.setGameMode(GameMode.SURVIVAL);
             p.setExp(0.0F);
             p.setLevel(0);
