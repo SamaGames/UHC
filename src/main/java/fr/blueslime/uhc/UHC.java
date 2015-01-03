@@ -176,6 +176,21 @@ public class UHC extends JavaPlugin
  
             Method m4 = BiomeBase.class.getMethod("a", float.class, float.class);
             m4.setAccessible(true);
+            
+            Field ff = BiomeBase.class.getDeclaredField("au");
+            ff.setAccessible(true);
+
+            List<BiomeMeta> mobs = new ArrayList<>();
+
+            mobs.add(new BiomeMeta(EntitySheep.class, 12, 4, 4));
+            mobs.add(new BiomeMeta(EntityRabbit.class, 10, 3, 3));
+            mobs.add(new BiomeMeta(EntityPig.class, 10, 4, 4));
+            mobs.add(new BiomeMeta(EntityChicken.class, 10, 4, 4));
+            mobs.add(new BiomeMeta(EntityCow.class, 8, 4, 4));
+            mobs.add(new BiomeMeta(EntityWolf.class, 5, 4, 4));
+
+            ff.set(nb1, mobs);
+            ff.set(nb2, mobs);
  
             m1.invoke(nb1, 353825);
             m2.invoke(nb1, "Oceane");
@@ -197,21 +212,6 @@ public class UHC extends JavaPlugin
  
             Field f3 = BiomeBase.class.getDeclaredField("biomes");
             this.setFinalStatic(f3, a);
-            
-            Field ff = BiomeBase.class.getDeclaredField("au");
-            ff.setAccessible(true);
-
-            List<BiomeMeta> mobs = new ArrayList<>();
-
-            mobs.add(new BiomeMeta(EntitySheep.class, 12, 4, 4));
-            mobs.add(new BiomeMeta(EntityRabbit.class, 10, 3, 3));
-            mobs.add(new BiomeMeta(EntityPig.class, 10, 4, 4));
-            mobs.add(new BiomeMeta(EntityChicken.class, 10, 4, 4));
-            mobs.add(new BiomeMeta(EntityCow.class, 8, 4, 4));
-            mobs.add(new BiomeMeta(EntityWolf.class, 5, 4, 4));
-
-            ff.set(nb1, mobs);
-            ff.set(nb2, mobs);
         }
         catch (Exception e) {}
     }
