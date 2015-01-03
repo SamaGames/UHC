@@ -8,15 +8,10 @@ public class CommandStart
 {
     public static boolean onCommand(CommandSender cs, Command cmnd, String string, String[] strings)
     {
-        if(UHC.getPlugin().getArenaSolo() != null)
+        if(UHC.getPlugin().getArena() != null)
         {
-            if(!UHC.getPlugin().getArenaSolo().isGameStarted())
-                UHC.getPlugin().getArenaSolo().startGame();
-        }
-        else
-        {
-            if(!UHC.getPlugin().getArenaTeam().isGameStarted())
-                UHC.getPlugin().getArenaTeam().startGame();   
+            if(!UHC.getPlugin().getArena().isGameStarted())
+                UHC.getPlugin().getArena().startGame();
         }
                 
         return true;

@@ -1,19 +1,28 @@
 package fr.blueslime.uhc;
 
-import fr.blueslime.uhc.arena.ArenaGameSolo;
-import fr.blueslime.uhc.events.common.*;
-import fr.blueslime.uhc.arena.ArenaGameTeam;
+import fr.blueslime.uhc.arena.ArenaCommon;
+import fr.blueslime.uhc.events.*;
 import fr.blueslime.uhc.arena.SpawnBlock;
 import fr.blueslime.uhc.commands.CommandAll;
 import fr.blueslime.uhc.commands.CommandUHC;
 import fr.blueslime.uhc.gui.Gui;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import net.minecraft.server.v1_8_R1.BiomeBase;
 import net.minecraft.server.v1_8_R1.BiomeForest;
+import net.minecraft.server.v1_8_R1.BiomeMeta;
+import net.minecraft.server.v1_8_R1.EntityChicken;
+import net.minecraft.server.v1_8_R1.EntityCow;
+import net.minecraft.server.v1_8_R1.EntityPig;
+import net.minecraft.server.v1_8_R1.EntityRabbit;
+import net.minecraft.server.v1_8_R1.EntitySheep;
+import net.minecraft.server.v1_8_R1.EntityWolf;
 import net.samagames.gameapi.GameAPI;
 import net.samagames.gameapi.json.Status;
 import org.bukkit.Bukkit;
@@ -24,8 +33,7 @@ public class UHC extends JavaPlugin
 {
     private static UHC plugin;
     private HashMap<UUID, Gui> playersGui;
-    private ArenaGameTeam arenaTeam = null;
-    private ArenaGameSolo arenaSolo = null;
+    private ArenaCommon arena;
     private String bungeeName;
     private int comPort;
     private int startTimer;
@@ -39,6 +47,7 @@ public class UHC extends JavaPlugin
         super.onEnable();
         plugin = this;
         
+        this.playersGui = new HashMap<>();
         this.join = false;
         
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -49,9 +58,7 @@ public class UHC extends JavaPlugin
                 
         this.saveResource("lobby.schematic", false);
         this.getCommand("uhc").setExecutor(new CommandUHC());
-        
-        if(this.team)
-            this.getCommand("all").setExecutor(new CommandAll());
+        this.getCommand("all").setExecutor(new CommandAll());
         
         this.registerEvents();
                 
@@ -79,38 +86,41 @@ public class UHC extends JavaPlugin
         this.bungeeName = getConfig().getString("BungeeName");
         UUID uuid = UUID.fromString(getConfig().getString("ArenaID"));
         int maxPlayersInTeam = getConfig().getInt("max-players-in-team", 3);
+        int teamNumber = getConfig().getInt("teams", 8);
+        boolean animatedBorder = getConfig().getBoolean("animated-border", true);
+        
+        if(teamNumber > 12)
+        {
+            Bukkit.getLogger().severe("[UHC] Team number > 12 ! Setting 8 teams.");
+            teamNumber = 8;
+        }
 
         if(this.team)
-        {
-            this.arenaTeam = new ArenaGameTeam(uuid, Bukkit.getWorld("world"), maxPlayersInTeam);
-            GameAPI.registerArena(this.arenaTeam);
-            GameAPI.registerGame("staffbeta", comPort, bungeeName);
-            Bukkit.addRecipe(this.arenaTeam.getMelonRecipe());
-        }
+            this.arena = new ArenaCommon(uuid, Bukkit.getWorld("world"), maxPlayersInTeam, teamNumber, animatedBorder);
         else
-        {
-            this.arenaSolo = new ArenaGameSolo(uuid, Bukkit.getWorld("world"));
-            GameAPI.registerArena(this.arenaSolo);
-            GameAPI.registerGame("staffbeta", comPort, bungeeName);
-            Bukkit.addRecipe(this.arenaSolo.getMelonRecipe());
-        }
+            this.arena = new ArenaCommon(uuid, Bukkit.getWorld("world"), 0, 0, animatedBorder);
         
-        this.playersGui = new HashMap<>();
-        GameAPI.getManager().sendArenas();
+        Bukkit.addRecipe(this.arena.getMelonRecipe());
+    }
+    
+    public void finishGeneration()
+    {
+        boolean staffMode = getConfig().getBoolean("staff-mode", false);
+        
+        GameAPI.registerArena(this.arena);
+        GameAPI.registerGame((staffMode ? "staffbeta" : (this.team ? "uhc_team" : "uhc_solo")), comPort, bungeeName);
+        GameAPI.getManager().sendSync();
+        
         this.join = true;
+        this.getArena().getEasterEggManager().start();
     }
 
     @Override
     public void onDisable()
     {
-        if(this.arenaTeam != null)
+        if(this.arena != null)
         {
-            this.arenaTeam.setStatus(Status.Stopping);
-        }
-        
-        if(this.arenaSolo != null)
-        {
-            this.arenaSolo.setStatus(Status.Stopping);
+            this.arena.setStatus(Status.Stopping);
         }
         
         GameAPI.getManager().sendSync();
@@ -119,56 +129,32 @@ public class UHC extends JavaPlugin
     
     public void registerEvents()
     {
+        Bukkit.getPluginManager().registerEvents(new UHCAsyncPlayerChatEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCBlockBreakEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCBlockPlaceEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCBrewEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCCraftItemEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCEntityDamageByEntityEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCEntityDamageEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCEntityDeathEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCEntityRegainHealthEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCEntityTargetEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCFinishJoinPlayerEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCFoodLevelChangeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCInventoryClickEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCInventoryCloseEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCCraftItemEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCEntityDeathEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCBrewEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCEntityRegainHealthEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCJoinModEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerDeathEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerDropItemEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerInteractEntityEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerInteractEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerPickupItemEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerPreJoinEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerQuitEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerRespawnEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPotionSplashEvent(), this);
-        
-        if(this.team)
-        {
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCAsyncPlayerChatEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCBlockBreakEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCBlockPlaceEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCEntityDamageByEntityEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCEntityDamageEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCEntityTargetEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCFinishJoinPlayerEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCFoodLevelChangeEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCJoinModEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCPlayerDeathEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCPlayerDropItemEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCPlayerInteractEntityEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCPlayerInteractEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCPlayerPickupItemEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCPlayerPreJoinEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCPlayerQuitEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCPlayerRespawnEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCRejoinPlayerEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.team.UHCSignChangeEvent(), this);
-        }
-        else
-        {
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCBlockBreakEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCBlockPlaceEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCEntityDamageByEntityEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCEntityDamageEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCEntityTargetEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCFinishJoinPlayerEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCFoodLevelChangeEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCJoinModEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCPlayerDeathEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCPlayerDropItemEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCPlayerInteractEntityEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCPlayerInteractEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCPlayerPickupItemEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCPlayerPreJoinEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCPlayerQuitEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCPlayerRespawnEvent(), this);
-            Bukkit.getPluginManager().registerEvents(new fr.blueslime.uhc.events.solo.UHCRejoinPlayerEvent(), this);
-        }
+        //Bukkit.getPluginManager().registerEvents(new UHCRejoinPlayerEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCSignChangeEvent(), this);
     }
     
     public void patchBiomes()
@@ -211,6 +197,21 @@ public class UHC extends JavaPlugin
  
             Field f3 = BiomeBase.class.getDeclaredField("biomes");
             this.setFinalStatic(f3, a);
+            
+            Field ff = BiomeBase.class.getDeclaredField("au");
+            ff.setAccessible(true);
+
+            List<BiomeMeta> mobs = new ArrayList<>();
+
+            mobs.add(new BiomeMeta(EntitySheep.class, 12, 4, 4));
+            mobs.add(new BiomeMeta(EntityRabbit.class, 10, 3, 3));
+            mobs.add(new BiomeMeta(EntityPig.class, 10, 4, 4));
+            mobs.add(new BiomeMeta(EntityChicken.class, 10, 4, 4));
+            mobs.add(new BiomeMeta(EntityCow.class, 8, 4, 4));
+            mobs.add(new BiomeMeta(EntityWolf.class, 5, 4, 4));
+
+            ff.set(nb1, mobs);
+            ff.set(nb2, mobs);
         }
         catch (Exception e) {}
     }
@@ -255,14 +256,9 @@ public class UHC extends JavaPlugin
         }
     }
 
-    public ArenaGameTeam getArenaTeam()
+    public ArenaCommon getArena()
     {
-        return this.arenaTeam;
-    }
-    
-    public ArenaGameSolo getArenaSolo()
-    {
-        return this.arenaSolo;
+        return this.arena;
     }
 
     public int getComPort()

@@ -1,7 +1,6 @@
 package fr.blueslime.uhc.arena;
 
 import fr.blueslime.uhc.UHC;
-import fr.blueslime.uhc.utils.ChunkUtils;
 import java.util.ArrayList;
 import java.util.UUID;
 import net.samagames.utils.FancyMessage;
@@ -27,7 +26,7 @@ public class ArenaTeam
     private boolean locked;
     private UUID nameChanger;
     
-    public ArenaTeam(ArenaGameTeam arena, int number, int maxPlayers, String name, ChatColor color, ItemStack icon, double spawnX, double spawnZ)
+    public ArenaTeam(ArenaCommon arena, int number, int maxPlayers, String name, ChatColor color, ItemStack icon, double spawnX, double spawnZ)
     {
         this.originName = name;
         this.number = number;
@@ -57,9 +56,7 @@ public class ArenaTeam
         this.team.setDisplayName(this.name);
         this.team.setCanSeeFriendlyInvisibles(true);
         this.team.setPrefix(this.color + "");
-        this.team.setSuffix(ChatColor.RESET + "");
-        
-        ChunkUtils.generateChunk(arena.getWorld(), arena.getWorld().getChunkAt(new Location(arena.getWorld(), spawnX, 0, spawnZ)));
+        this.team.setSuffix(ChatColor.RESET + "");        
     }
     
     public void join(ArenaPlayer player)
@@ -120,7 +117,7 @@ public class ArenaTeam
         
         if(this.players.isEmpty())
         {
-            UHC.getPlugin().getArenaTeam().loseTeam(this);
+            UHC.getPlugin().getArena().loseTeam(this);
         }
     }
     
@@ -153,6 +150,11 @@ public class ArenaTeam
     public ChatColor getChatColor()
     {
         return this.color;
+    }
+    
+    public Team getScoreboardTeam()
+    {
+        return this.team;
     }
     
     public ItemStack getIcon()

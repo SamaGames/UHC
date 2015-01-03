@@ -1,6 +1,8 @@
 package fr.blueslime.uhc.commands;
 
+import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
+import fr.blueslime.uhc.arena.ArenaCommon.ArenaType;
 import fr.blueslime.uhc.arena.ArenaPlayer;
 import java.util.Date;
 import net.zyuiop.MasterBundle.MasterBundle;
@@ -20,55 +22,62 @@ public class CommandAll implements CommandExecutor
         {
             Player sender = (Player) cs;
             
-            if(UHC.getPlugin().getArenaTeam().isGameStarted() && UHC.getPlugin().getArenaTeam().hasPlayer(sender.getUniqueId()))
+            if(UHC.getPlugin().getArena().getArenaType() == ArenaType.TEAM)
             {
-                if(strings.length != 0)
+                if(UHC.getPlugin().getArena().isGameStarted() && UHC.getPlugin().getArena().hasPlayer(sender.getUniqueId()))
                 {
-                    Player player = (Player) cs;
-                    
-                    if (MasterBundle.plugin.mutedPlayers.containsKey(player.getUniqueId()))
+                    if(strings.length != 0)
                     {
-                        Date end = MasterBundle.plugin.mutedPlayers.get(player.getUniqueId());
-                        
-                        if (end.before(new Date()))
+                        Player player = (Player) cs;
+
+                        if (MasterBundle.plugin.mutedPlayers.containsKey(player.getUniqueId()))
                         {
-                            MasterBundle.plugin.mutedPlayers.remove(player.getUniqueId());
-                            MasterBundle.plugin.muteReasons.remove(player.getUniqueId());
+                            Date end = MasterBundle.plugin.mutedPlayers.get(player.getUniqueId());
+
+                            if (end.before(new Date()))
+                            {
+                                MasterBundle.plugin.mutedPlayers.remove(player.getUniqueId());
+                                MasterBundle.plugin.muteReasons.remove(player.getUniqueId());
+                            }
+                            else
+                            {
+                                player.sendMessage(ChatColor.RED + "Vous êtes actuellement muet pour une durée de " + formatTime(end));
+                                player.sendMessage(ChatColor.RED + "Raison : " + ChatColor.YELLOW + MasterBundle.plugin.muteReasons.get(player.getUniqueId()));
+                                return true;
+                            }
                         }
-                        else
+
+                        ArenaPlayer aPlayer = UHC.getPlugin().getArena().getPlayer(sender.getUniqueId());
+                        StringBuilder messageBuilder = new StringBuilder();
+
+                        messageBuilder.append(aPlayer.getTeam().getChatColor()).append("[").append(aPlayer.getTeam().getName()).append(aPlayer.getTeam().getChatColor()).append("]").append(" ");
+                        messageBuilder.append(sender.getName()).append(ChatColor.RESET).append(": ");
+
+                        for(String s : strings)
                         {
-                            player.sendMessage(ChatColor.RED + "Vous êtes actuellement muet pour une durée de " + formatTime(end));
-                            player.sendMessage(ChatColor.RED + "Raison : " + ChatColor.YELLOW + MasterBundle.plugin.muteReasons.get(player.getUniqueId()));
-                            return true;
+                            messageBuilder.append(s).append(" ");
+                        }
+
+                        String message = messageBuilder.toString();
+
+                        for(Player pplayer : Bukkit.getOnlinePlayers())
+                        {
+                            pplayer.sendMessage(message);
                         }
                     }
-                    
-                    ArenaPlayer aPlayer = UHC.getPlugin().getArenaTeam().getPlayer(sender.getUniqueId());
-                    StringBuilder messageBuilder = new StringBuilder();
-
-                    messageBuilder.append(aPlayer.getTeam().getChatColor()).append("[").append(aPlayer.getTeam().getName()).append(aPlayer.getTeam().getChatColor()).append("]").append(" ");
-                    messageBuilder.append(sender.getName()).append(ChatColor.RESET).append(": ");
-
-                    for(String s : strings)
+                    else
                     {
-                        messageBuilder.append(s).append(" ");
-                    }
-
-                    String message = messageBuilder.toString();
-
-                    for(Player pplayer : Bukkit.getOnlinePlayers())
-                    {
-                        pplayer.sendMessage(message);
+                        sender.sendMessage(ChatColor.RED + "Vous ne pouvez pas envoyer un message vide :(");
                     }
                 }
                 else
                 {
-                    sender.sendMessage(ChatColor.RED + "Vous ne pouvez pas envoyer un message vide :(");
+                    sender.sendMessage(ChatColor.RED + "Vous ne pouvez utiliser cette commande que quand vous êtes en jeu !");
                 }
             }
             else
             {
-                sender.sendMessage(ChatColor.RED + "Vous ne pouvez utiliser cette commande que quand vous êtes en jeu !");
+                sender.sendMessage(Messages.wrongGameType);
             }
         }
         

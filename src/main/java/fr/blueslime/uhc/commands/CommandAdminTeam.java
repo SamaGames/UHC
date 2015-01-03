@@ -2,6 +2,7 @@ package fr.blueslime.uhc.commands;
 
 import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
+import fr.blueslime.uhc.arena.ArenaCommon.ArenaType;
 import fr.blueslime.uhc.arena.ArenaTeam;
 import java.util.UUID;
 import org.bukkit.Bukkit;
@@ -17,28 +18,35 @@ public class CommandAdminTeam
     {
         if(cs.getName().equals("cece35b"))
         {
-            if(strings.length >= 2)
+            if(UHC.getPlugin().getArena().getArenaType() == ArenaType.TEAM)
             {
-                String subcommand = strings[1];
-
-                switch(subcommand)
+                if(strings.length >= 2)
                 {
-                    case "create":
-                        createTeam(cs, strings);
-                        break;
+                    String subcommand = strings[1];
 
-                    case "join":
-                        joinTeam(cs, strings);
-                        break;
+                    switch(subcommand)
+                    {
+                        case "create":
+                            createTeam(cs, strings);
+                            break;
 
-                    case "delete":
-                        deleteTeam(cs, strings);
-                        break;
+                        case "join":
+                            joinTeam(cs, strings);
+                            break;
+
+                        case "delete":
+                            deleteTeam(cs, strings);
+                            break;
+                    }
+                }
+                else
+                {
+                    return false;
                 }
             }
             else
             {
-                return false;
+                cs.sendMessage(Messages.wrongGameType);
             }
         }
         else
@@ -51,7 +59,7 @@ public class CommandAdminTeam
     
     private static void createTeam(CommandSender cs, String[] strings)
     {
-        if(!UHC.getPlugin().getArenaTeam().isAdminTeamExist())
+        if(!UHC.getPlugin().getArena().isAdminTeamExist())
         {
             StringBuilder name = new StringBuilder();
             name.append(ChatColor.DARK_RED).append("M");
@@ -60,7 +68,7 @@ public class CommandAdminTeam
             name.append(ChatColor.DARK_AQUA).append("t");
             name.append(ChatColor.DARK_BLUE).append("é");
             
-            UHC.getPlugin().getArenaTeam().createTeam(new ArenaTeam(UHC.getPlugin().getArenaTeam(), 8, UHC.getPlugin().getArenaTeam().getMaxPlayersInTeam(), name.toString(), ChatColor.AQUA, new ItemStack(Material.COOKIE, 1), 0, 0));
+            UHC.getPlugin().getArena().createTeam(new ArenaTeam(UHC.getPlugin().getArena(), 8, UHC.getPlugin().getArena().getMaxPlayersInTeam(), name.toString(), ChatColor.AQUA, new ItemStack(Material.COOKIE, 1), 0, 0));
             cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.YELLOW + "L'équipe a été créée avec succès !");
         }
         else
@@ -71,14 +79,14 @@ public class CommandAdminTeam
     
     private static void deleteTeam(CommandSender cs, String[] strings)
     {
-        if(UHC.getPlugin().getArenaTeam().isAdminTeamExist())
+        if(UHC.getPlugin().getArena().isAdminTeamExist())
         {
-            for(UUID player : UHC.getPlugin().getArenaTeam().getAdminTeam().getPlayers())
+            for(UUID player : UHC.getPlugin().getArena().getAdminTeam().getPlayers())
             {
-                UHC.getPlugin().getArenaTeam().getAdminTeam().leave(UHC.getPlugin().getArenaTeam().getPlayer(player));
+                UHC.getPlugin().getArena().getAdminTeam().leave(UHC.getPlugin().getArena().getPlayer(player));
             }
             
-            UHC.getPlugin().getArenaTeam().removeAdminTeam();
+            UHC.getPlugin().getArena().removeAdminTeam();
             cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.YELLOW + "L'équipe a été supprimée avec succès !");
         }
         else
@@ -89,16 +97,16 @@ public class CommandAdminTeam
     
     private static void joinTeam(CommandSender cs, String[] strings)
     {
-        if(UHC.getPlugin().getArenaTeam().isAdminTeamExist())
+        if(UHC.getPlugin().getArena().isAdminTeamExist())
         {
             if(strings.length >= 3)
             {
                 if(Bukkit.getPlayer(strings[2]) != null)
                 {
-                    if(UHC.getPlugin().getArenaTeam().getPlayer(Bukkit.getPlayer(strings[2]).getUniqueId()).hasTeam())
-                            UHC.getPlugin().getArenaTeam().getPlayer(Bukkit.getPlayer(strings[2]).getUniqueId()).getTeam().leave(UHC.getPlugin().getArenaTeam().getPlayer(Bukkit.getPlayer(strings[2]).getUniqueId()));
+                    if(UHC.getPlugin().getArena().getPlayer(Bukkit.getPlayer(strings[2]).getUniqueId()).hasTeam())
+                            UHC.getPlugin().getArena().getPlayer(Bukkit.getPlayer(strings[2]).getUniqueId()).getTeam().leave(UHC.getPlugin().getArena().getPlayer(Bukkit.getPlayer(strings[2]).getUniqueId()));
                     
-                    UHC.getPlugin().getArenaTeam().getAdminTeam().join(UHC.getPlugin().getArenaTeam().getPlayer(Bukkit.getPlayer(strings[2]).getUniqueId()));
+                    UHC.getPlugin().getArena().getAdminTeam().join(UHC.getPlugin().getArena().getPlayer(Bukkit.getPlayer(strings[2]).getUniqueId()));
                 
                     cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.YELLOW + "Le joueur a été ajouté avec succès !");
                 }

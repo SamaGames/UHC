@@ -22,7 +22,7 @@ public class Messages
     public static String needVIP = PLUGIN_TAG + ChatColor.RED + "Vous devez être VIP pour pouvoir utiliser cette fonction !";
     public static String lineEmpty = PLUGIN_TAG + ChatColor.RED + "Vous ne pouvez pas donner un nom d'équipe vide !";
     public static String spectator = PLUGIN_TAG + ChatColor.GOLD + ChatColor.BOLD + "Vous etes spectateur. Vous pouvez vous téléporter aux joueurs via un clic molette de votre souris.";
-    public static String adminOnly = PLUGIN_TAG + ChatColor.RED + "Cette équipe est réservée aux administrateurs !";
+    public static String adminOnly = PLUGIN_TAG + ChatColor.RED + "Cette équipe est réservée au développeur du jeu !";
     public static String disconnected = PLUGIN_TAG + ChatColor.RED + "${PLAYER} s'est déconnecté et n'est pas revenu après 10 minutes :(";
     public static String teamLocked = PLUGIN_TAG + ChatColor.RED + "Votre équipe est maintenant fermée !";
     public static String teamUnlocked = PLUGIN_TAG + ChatColor.GREEN + "Votre équipe est maintenant ouverte !";
@@ -33,4 +33,5 @@ public class Messages
     public static String dontTouchHer = PLUGIN_TAG + ChatColor.RED + ChatColor.BOLD + "NE TOUCHE PAS A MAITE !";
     public static String endOfGameAt = PLUGIN_TAG + ChatColor.RED + "Fin de la partie forcée à la fin de l'épisode !";
     public static String endOfGameIn = PLUGIN_TAG + ChatColor.RED + "Fin de la partie forcée dans " + ChatColor.AQUA + "${TIME}";
+    public static String wrongGameType = PLUGIN_TAG + ChatColor.RED + "Cette commande ne correspond pas à ce type de jeu !";
 }

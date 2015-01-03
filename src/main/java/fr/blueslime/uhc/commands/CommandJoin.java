@@ -2,6 +2,7 @@ package fr.blueslime.uhc.commands;
 
 import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
+import fr.blueslime.uhc.arena.ArenaCommon.ArenaType;
 import fr.blueslime.uhc.arena.ArenaPlayer;
 import fr.blueslime.uhc.arena.ArenaTeam;
 import org.bukkit.Bukkit;
@@ -16,21 +17,28 @@ public class CommandJoin
     {
         if(cs instanceof Player)
         {
-            if(!UHC.getPlugin().getArenaTeam().isGameStarted())
+            if(UHC.getPlugin().getArena().getArenaType() == ArenaType.TEAM)
             {
-                String team = strings[1];
-                String player = strings[2];
-                ArenaPlayer aPlayer = UHC.getPlugin().getArenaTeam().getPlayer(Bukkit.getPlayer(player).getUniqueId());
-                ArenaTeam aTeam = UHC.getPlugin().getArenaTeam().getTeamByNumber(Integer.valueOf(team));
-                
-                if(!aPlayer.hasTeam())
+                if(!UHC.getPlugin().getArena().isGameStarted())
                 {
-                    if(aTeam.isInvited(aPlayer.getPlayerID()))
+                    String team = strings[1];
+                    String player = strings[2];
+                    ArenaPlayer aPlayer = UHC.getPlugin().getArena().getPlayer(Bukkit.getPlayer(player).getUniqueId());
+                    ArenaTeam aTeam = UHC.getPlugin().getArena().getTeamByNumber(Integer.valueOf(team));
+
+                    if(!aPlayer.hasTeam())
                     {
-                        aTeam.join(aPlayer);
-                        aPlayer.getPlayer().sendMessage(Messages.teamJoined.replace("${TEAM}", aTeam.getChatColor() + aTeam.getName()) + ChatColor.YELLOW);
+                        if(aTeam.isInvited(aPlayer.getPlayerID()))
+                        {
+                            aTeam.join(aPlayer);
+                            aPlayer.getPlayer().sendMessage(Messages.teamJoined.replace("${TEAM}", aTeam.getChatColor() + aTeam.getName()) + ChatColor.YELLOW);
+                        }
                     }
                 }
+            }
+            else
+            {
+                cs.sendMessage(Messages.wrongGameType);
             }
         }
         

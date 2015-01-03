@@ -2,7 +2,7 @@ package fr.blueslime.uhc.gui;
 
 import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
-import fr.blueslime.uhc.arena.ArenaGameTeam;
+import fr.blueslime.uhc.arena.ArenaCommon;
 import fr.blueslime.uhc.arena.ArenaPlayer;
 import fr.blueslime.uhc.arena.ArenaTeam;
 import fr.blueslime.uhc.utils.ItemUtils;
@@ -57,7 +57,7 @@ public class GuiSelectTeam implements Gui
         
         int last = 10;
         
-        for(ArenaTeam team : UHC.getPlugin().getArenaTeam().getTeamAlive())
+        for(ArenaTeam team : UHC.getPlugin().getArena().getTeamAlive())
         {
             String name;
             
@@ -67,7 +67,7 @@ public class GuiSelectTeam implements Gui
             }
             else
             {
-                name = team.getChatColor() + "Equipe " + team.getName() + " [" + team.getPlayers().size() + "/" + UHC.getPlugin().getArenaTeam().getMaxPlayersInTeam() + "]";
+                name = team.getChatColor() + "Equipe " + team.getName() + " [" + team.getPlayers().size() + "/" + UHC.getPlugin().getArena().getMaxPlayersInTeam() + "]";
             }
             
             ArrayList<String> lores = new ArrayList<>();
@@ -113,7 +113,7 @@ public class GuiSelectTeam implements Gui
     @Override
     public void onClic(final Player player, ItemStack stack)
     {
-        ArenaGameTeam arena = UHC.getPlugin().getArenaTeam();
+        ArenaCommon arena = UHC.getPlugin().getArena();
         
         if(stack.getType() == Material.WOOL)
         {
@@ -130,7 +130,7 @@ public class GuiSelectTeam implements Gui
                             if(arena.getPlayer(player.getUniqueId()).hasTeam())
                                 arena.getPlayer(player.getUniqueId()).getTeam().leave(arena.getPlayer(player.getUniqueId()));
 
-                            team.join(UHC.getPlugin().getArenaTeam().getPlayer(player.getUniqueId()));
+                            team.join(UHC.getPlugin().getArena().getPlayer(player.getUniqueId()));
                             player.sendMessage(Messages.teamJoined.replace("${TEAM}", team.getChatColor() + team.getName()) + ChatColor.YELLOW);
                         }
                         else
@@ -258,7 +258,7 @@ public class GuiSelectTeam implements Gui
                 {
                     player.sendMessage(Messages.playersAvailable);
                     
-                    for(ArenaPlayer aInvite : UHC.getPlugin().getArenaTeam().getArenaPlayers())
+                    for(ArenaPlayer aInvite : UHC.getPlugin().getArena().getArenaPlayers())
                     {
                         if(!aInvite.hasTeam())
                         {
