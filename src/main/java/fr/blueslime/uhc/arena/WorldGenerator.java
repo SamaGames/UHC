@@ -8,6 +8,10 @@ import org.bukkit.scheduler.BukkitTask;
 public class WorldGenerator
 {
     public static BukkitTask task;
+    
+    public static long lastShow = System.currentTimeMillis();
+    
+    public static int numberChunk = 0;
 
     public static void begin(final World world)
     {
@@ -24,7 +28,11 @@ public class WorldGenerator
                 while (i < 5)
                 {
                     world.getChunkAt(world.getBlockAt(x, 64, z)).load(true);
-                    Bukkit.getLogger().info("Loaded chunk at : " + x + ", " + z + ".");
+                    if(System.currentTimeMillis() - lastShow > 1000L)
+                    {
+                        Bukkit.getLogger().info("Generated chunk : " + (numberChunk * 100 / 15625) + ".");
+                    }
+                    
                     z+=16;
                     
                     if (z >= 1000)
@@ -40,6 +48,7 @@ public class WorldGenerator
                     }
                     
                     i++;
+                    numberChunk++;
                 }
             }
         }, 1L, 1L);
