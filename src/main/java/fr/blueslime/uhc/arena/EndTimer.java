@@ -47,17 +47,10 @@ public class EndTimer extends Thread
                     setTimeout(0);
                     this.end();
                     
-                    Bukkit.getScheduler().runTask(UHC.getPlugin(), new Runnable()
-                    {
-                        public void run()
-                        {
-                            if(parent.getArenaType() == ArenaType.TEAM)
-                                parent.finishTeam(null);
-                            else
-                                parent.finishSolo(null);
-                        }
-                    });
-                    return;
+                    if(parent.getArenaType() == ArenaType.TEAM)
+                        parent.finishTeam(null);
+                    else
+                        parent.finishSolo(null);
                 }
 
             }

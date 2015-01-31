@@ -1,6 +1,8 @@
 package fr.blueslime.uhc.events;
 
+import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
+import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -19,8 +21,26 @@ public class UHCBlockPlaceEvent implements Listener
             event.setCancelled(true);
         }
         else
-        {
-            event.setCancelled(false);
+        {      
+            boolean flag = false;
+            
+            if(event.getBlock().getWorld().getBlockAt(event.getBlock().getLocation().add(1.0D, 0.0D, 0.0D)).getType() == Material.PORTAL)
+                flag = true;
+            
+            if(event.getBlock().getWorld().getBlockAt(event.getBlock().getLocation().subtract(1.0D, 0.0D, 0.0D)).getType() == Material.PORTAL)
+                flag = true;
+            
+            if(event.getBlock().getWorld().getBlockAt(event.getBlock().getLocation().add(0.0D, 0.0D, 1.0D)).getType() == Material.PORTAL)
+                flag = true;
+            
+            if(event.getBlock().getWorld().getBlockAt(event.getBlock().getLocation().subtract(0.0D, 0.0D, 1.0D)).getType() == Material.PORTAL)
+                flag = true;
+            
+            if(flag)
+            {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(Messages.blockPlaceRefused);
+            }
         }
     }
 }

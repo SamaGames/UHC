@@ -17,8 +17,16 @@ commands:
     all:
         description: Chat
         usage: /all <Message>
+    inv:
+        description: Voir l'inventaire d'un joueur
+        usage: /inv <Joueur>
+        permission: UHC.inv
+        permission-message: Permission non accordée
 
 permissions:
-   UHC.op:
-      description: Commandes OP UHC
-      default: op
+    UHC.op:
+        description: Commandes OP UHC
+        default: op
+    UHC.inv:
+        description: Commandes Inv UHC
+        default: op

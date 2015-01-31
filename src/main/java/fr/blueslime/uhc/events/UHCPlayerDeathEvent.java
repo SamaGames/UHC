@@ -35,11 +35,12 @@ public class UHCPlayerDeathEvent implements Listener
                     
                     if(!PermissionsBukkit.hasPermission(deadPlayer.getUniqueId(), "uhc.spectate"))
                     {
-                        deadPlayer.getPlayer().sendMessage(ChatColor.RED + "Merci d'avoir joué :)");
+                        deadPlayer.getPlayer().sendMessage(ChatColor.RED + "Vous serez téléporté au lobby dans 20 secondes...");
                         
                         this.timer = Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), new Runnable()
                         {
                             int time;
+                            
                             @Override
                             public void run()
                             {
@@ -47,6 +48,7 @@ public class UHCPlayerDeathEvent implements Listener
                                 
                                 if(time == 20)
                                 {
+                                    deadPlayer.getPlayer().sendMessage(ChatColor.RED + "Merci d'avoir joué :)");
                                     callback(deadPlayer);
                                 }
                             } 

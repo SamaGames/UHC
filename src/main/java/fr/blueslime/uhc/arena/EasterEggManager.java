@@ -14,7 +14,6 @@ public class EasterEggManager
 {
     private final String maiteTag;
     private final ArrayList<ChatColor> rainbow;
-    private final ParticleEffect heart;
     private int loopID;
     private int rainbowSlot;
     private int count;
@@ -22,7 +21,6 @@ public class EasterEggManager
     public EasterEggManager()
     {        
         this.maiteTag = ChatColor.GOLD + "[" + ChatColor.YELLOW + "Maïté" + ChatColor.GOLD + "] " + ChatColor.RESET;
-        this.heart = ParticleEffect.HEART;
         this.count = 0;
         this.rainbowSlot = 0;
         
@@ -64,13 +62,6 @@ public class EasterEggManager
         if(UHC.getPlugin().getArena().isAdminTeamExist())
         {
             ArenaTeam team = UHC.getPlugin().getArena().getAdminTeam();
-            ParticleEffect note = ParticleEffect.NOTE;
-            
-            for(UUID uuid : team.getPlayers())
-            {
-                note.display(0.5F, 0.5F, 0.5F, 0.25F, 1, Bukkit.getPlayer(uuid).getLocation(), 160.0);
-            }
-            
             this.count++;
             
             if(this.count == 10)
@@ -89,8 +80,23 @@ public class EasterEggManager
         {
             if(Bukkit.getPlayer(UUID.fromString("dfd16cea-d6d8-4f51-aade-8c7ad157c93f")) != null)
             {
-                this.heart.display(0.5F, 0.5F, 0.5F, 0.25F, 1, Bukkit.getPlayer(UUID.fromString("dfd16cea-d6d8-4f51-aade-8c7ad157c93f")).getLocation(), 160.0);
+                ParticleEffect.HEART.display(0.5F, 0.5F, 0.5F, 0.25F, 1, Bukkit.getPlayer(UUID.fromString("dfd16cea-d6d8-4f51-aade-8c7ad157c93f")).getLocation(), 160.0);
             }
+            
+            if(UHC.getPlugin().getArena().isAdminTeamExist())
+            {
+                ArenaTeam team = UHC.getPlugin().getArena().getAdminTeam();
+
+                for(UUID uuid : team.getPlayers())
+                {
+                    ParticleEffect.NOTE.display(0.5F, 0.5F, 0.5F, 0.25F, 1, Bukkit.getPlayer(uuid).getLocation(), 64.0);
+                }
+            }
+        }
+        else
+        {
+            if(!UHC.getPlugin().getArena().isAdminTeamExist())
+                kill();
         }
     }
     

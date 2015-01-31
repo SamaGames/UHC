@@ -7,7 +7,6 @@ import net.samagames.gameapi.GameAPI;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 
 public class UHCPlayerQuitEvent implements Listener
 {
@@ -22,14 +21,7 @@ public class UHCPlayerQuitEvent implements Listener
             
             if(arena.isGameStarted())
             {
-                //GameAPI.addRejoinList(event.getPlayer().getUniqueId(), 600);
-                //UHC.getPlugin().getArena().playerDisconnect(event.getPlayer().getUniqueId());
-                arena.lose(player.getPlayerID(), true);
-                
-                for(ItemStack stack : event.getPlayer().getInventory().getContents())
-                {
-                    event.getPlayer().getWorld().dropItem(event.getPlayer().getLocation(), stack);
-                }
+                UHC.getPlugin().getArena().playerDisconnect(event.getPlayer().getUniqueId());
             }
             else
             {

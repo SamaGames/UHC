@@ -4,15 +4,14 @@ import fr.blueslime.uhc.arena.ArenaCommon;
 import fr.blueslime.uhc.events.*;
 import fr.blueslime.uhc.arena.SpawnBlock;
 import fr.blueslime.uhc.commands.CommandAll;
+import fr.blueslime.uhc.commands.CommandInv;
 import fr.blueslime.uhc.commands.CommandUHC;
 import fr.blueslime.uhc.gui.Gui;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 import net.minecraft.server.v1_8_R1.BiomeBase;
 import net.minecraft.server.v1_8_R1.BiomeForest;
@@ -37,8 +36,8 @@ public class UHC extends JavaPlugin
     private String bungeeName;
     private int comPort;
     private int startTimer;
-    private boolean join;
     private boolean team;
+    private boolean staffMode;
     private SpawnBlock spawnBlock;
 
     @Override
@@ -48,7 +47,6 @@ public class UHC extends JavaPlugin
         plugin = this;
         
         this.playersGui = new HashMap<>();
-        this.join = false;
         
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         this.patchBiomes();
@@ -58,6 +56,7 @@ public class UHC extends JavaPlugin
                 
         this.saveResource("lobby.schematic", false);
         this.getCommand("uhc").setExecutor(new CommandUHC());
+        this.getCommand("inv").setExecutor(new CommandInv());
         this.getCommand("all").setExecutor(new CommandAll());
         
         this.registerEvents();
@@ -78,16 +77,16 @@ public class UHC extends JavaPlugin
     public void finishInit()
     {
         Bukkit.getScheduler().cancelTask(this.startTimer);
-        
+                
         this.spawnBlock = new SpawnBlock(this);
 	this.spawnBlock.generate();
         
         this.comPort = getConfig().getInt("com-port");
         this.bungeeName = getConfig().getString("BungeeName");
-        UUID uuid = UUID.fromString(getConfig().getString("ArenaID"));
         int maxPlayersInTeam = getConfig().getInt("max-players-in-team", 3);
         int teamNumber = getConfig().getInt("teams", 8);
         boolean animatedBorder = getConfig().getBoolean("animated-border", true);
+        this.staffMode = getConfig().getBoolean("staff-mode", false);
         
         if(teamNumber > 12)
         {
@@ -96,23 +95,22 @@ public class UHC extends JavaPlugin
         }
 
         if(this.team)
-            this.arena = new ArenaCommon(uuid, Bukkit.getWorld("world"), maxPlayersInTeam, teamNumber, animatedBorder);
+            this.arena = new ArenaCommon(Bukkit.getWorld("world"), maxPlayersInTeam, teamNumber, animatedBorder);
         else
-            this.arena = new ArenaCommon(uuid, Bukkit.getWorld("world"), 0, 0, animatedBorder);
+            this.arena = new ArenaCommon(Bukkit.getWorld("world"), 0, 0, animatedBorder);
+        
+        GameAPI.registerArena(this.arena);
+        GameAPI.registerGame((this.staffMode ? "staffbeta" : (this.team ? "uhc_team" : "uhc_solo")), comPort, bungeeName);
+        GameAPI.getManager().sendSync();
         
         Bukkit.addRecipe(this.arena.getMelonRecipe());
     }
     
     public void finishGeneration()
     {
-        boolean staffMode = getConfig().getBoolean("staff-mode", false);
-        
-        GameAPI.registerArena(this.arena);
-        GameAPI.registerGame((staffMode ? "staffbeta" : (this.team ? "uhc_team" : "uhc_solo")), comPort, bungeeName);
+        this.arena.setStatus(Status.Available);
+        this.arena.getEasterEggManager().start();
         GameAPI.getManager().sendSync();
-        
-        this.join = true;
-        this.getArena().getEasterEggManager().start();
     }
 
     @Override
@@ -153,8 +151,11 @@ public class UHC extends JavaPlugin
         Bukkit.getPluginManager().registerEvents(new UHCPlayerQuitEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerRespawnEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPotionSplashEvent(), this);
-        //Bukkit.getPluginManager().registerEvents(new UHCRejoinPlayerEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCRejoinPlayerEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCSignChangeEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCBlockFromToEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerBucketEmptyEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerTeleportEvent(), this);
     }
     
     public void patchBiomes()
@@ -165,55 +166,87 @@ public class UHC extends JavaPlugin
  
         try
         {
-            Method m1 = BiomeBase.class.getMethod("b", int.class);
+            Method m1 = BiomeBase.class.getDeclaredMethod("a", int.class, boolean.class);
             m1.setAccessible(true);
  
-            Method m2 = BiomeBase.class.getMethod("a", String.class);
+            Method m2 = BiomeBase.class.getDeclaredMethod("a", String.class);
             m2.setAccessible(true);
+
+            Field ff2 = BiomeBase.class.getDeclaredField("ah");
+            ff2.setAccessible(true);
  
-            Method m3 = BiomeBase.class.getMethod("a", int.class);
+            Method m3 = BiomeBase.class.getDeclaredMethod("a", int.class);
             m3.setAccessible(true);
  
-            Method m4 = BiomeBase.class.getMethod("a", float.class, float.class);
+            Method m4 = BiomeBase.class.getDeclaredMethod("a", float.class, float.class);
             m4.setAccessible(true);
-            
+
             Field ff = BiomeBase.class.getDeclaredField("au");
             ff.setAccessible(true);
 
-            List<BiomeMeta> mobs = new ArrayList<>();
+            ArrayList<BiomeMeta> mobs = new ArrayList<>();
 
-            mobs.add(new BiomeMeta(EntitySheep.class, 12, 4, 4));
-            mobs.add(new BiomeMeta(EntityRabbit.class, 10, 3, 3));
-            mobs.add(new BiomeMeta(EntityPig.class, 10, 4, 4));
-            mobs.add(new BiomeMeta(EntityChicken.class, 10, 4, 4));
-            mobs.add(new BiomeMeta(EntityCow.class, 8, 4, 4));
-            mobs.add(new BiomeMeta(EntityWolf.class, 5, 4, 4));
+            mobs.add(new BiomeMeta(EntitySheep.class, 15, 4, 4));
+            mobs.add(new BiomeMeta(EntityRabbit.class, 15, 3, 5));
+            mobs.add(new BiomeMeta(EntityPig.class, 20, 10, 15));
+            mobs.add(new BiomeMeta(EntityChicken.class, 21, 10, 15));
+            mobs.add(new BiomeMeta(EntityCow.class, 20, 10, 15));
+            mobs.add(new BiomeMeta(EntityWolf.class, 6, 5, 30));
 
             ff.set(nb1, mobs);
             ff.set(nb2, mobs);
  
-            m1.invoke(nb1, 353825);
-            m2.invoke(nb1, "Oceane");
+            m1.invoke(nb1, 353825, false);
+
+            m2.invoke(nb1, "Forest");
             m3.invoke(nb1, 5159473);
             m4.invoke(nb1, 0.7F, 0.8F);
- 
-            m1.invoke(nb2, 353825);
-            m2.invoke(nb2, "Deep Oceane");
-            m3.invoke(nb2, 5159473);
+
+            m1.invoke(nb2, 353826, false);
+            m2.invoke(nb2, "Forest");
+            m3.invoke(nb2, 5159474);
             m4.invoke(nb2, 0.7F, 0.8F);
  
             Field f1 = BiomeBase.class.getDeclaredField("OCEAN");
             Field f2 = BiomeBase.class.getDeclaredField("DEEP_OCEAN");
+            Field f3 = BiomeBase.class.getDeclaredField("ad");
+
             this.setFinalStatic(f1, nb1);
             this.setFinalStatic(f2, nb2);
- 
+            this.setFinalStatic(f3, nb1);
+
             a[0] = nb1;
+            a[9] = null;
+            a[10] = null;
+            a[11] = null;
+            a[12] = null;
+            a[13] = null;
+            a[14] = null;
+
+            a[18] = null;
+
+            a[21] = null;
+
             a[24] = nb2;
- 
-            Field f3 = BiomeBase.class.getDeclaredField("biomes");
-            this.setFinalStatic(f3, a);
+            a[25] = null;
+
+            a[30] = null;
+            a[31] = null;
+            a[32] = null;
+            a[33] = null;
+
+            a[36] = null;
+            a[37] = null;
+            a[38] = null;
+            a[39] = null;
+
+            Field f4 = BiomeBase.class.getDeclaredField("biomes");
+            this.setFinalStatic(f4, a);
         }
-        catch (Exception e) {}
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
     }
     
     public void setFinalStatic(Field field, Object obj) throws Exception
@@ -287,15 +320,15 @@ public class UHC extends JavaPlugin
     {
         return this.spawnBlock;
     }
-
-    public boolean canJoin()
-    {
-        return this.join;
-    }
     
     public boolean isTeamMode()
     {
         return this.team;
+    }
+    
+    public boolean isStaffMode()
+    {
+        return this.staffMode;
     }
     
     public static UHC getPlugin()

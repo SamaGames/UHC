@@ -16,9 +16,11 @@ import net.samagames.gameapi.GameUtils;
 import net.samagames.gameapi.json.Status;
 import net.samagames.gameapi.themachine.CoherenceMachine;
 import net.samagames.gameapi.themachine.messages.StaticMessages;
+import net.samagames.gameapi.themachine.messages.templates.PlayerWinTemplate;
+import net.samagames.gameapi.themachine.messages.templates.SpecifiedWinTemplate;
 import net.samagames.gameapi.types.GameArena;
-import net.samagames.permissionsbukkit.PermissionsBukkit;
 import net.samagames.utils.ObjectiveSign;
+import net.samagames.utils.PlayerUtils;
 import net.zyuiop.MasterBundle.StarsManager;
 import net.zyuiop.coinsManager.CoinsManager;
 import net.zyuiop.statsapi.StatsApi;
@@ -34,6 +36,7 @@ import org.bukkit.WorldBorder;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
@@ -48,7 +51,6 @@ public class ArenaCommon implements GameArena
     public static enum ArenaType { SOLO, TEAM };
     
     private final ArenaType arenaType;
-    private final UUID arenaID;
     private final World world;
     private final CoherenceMachine machine;
     private final ArrayList<ArenaPlayer> arenaPlayers;
@@ -57,11 +59,14 @@ public class ArenaCommon implements GameArena
     private final ArrayList<Location> spawns;
     private final HashMap<UUID, Integer> playersCrash;
     private final HashMap<UUID, Integer> playersCrashTimer;
+    private final HashMap<UUID, Location> playersCrashLocation;
+    private final HashMap<UUID, PlayerInventory> playersCrashInventory;
     private final int maxPlayers, minPlayers, maxPlayersInTeam;
     private final ObjectiveSign objective;
     private final Scoreboard board;
     private final NumberFormat formatter;
     private final WorldBorder worldBorder;
+    private final WorldBorder netherBorder;
     private final EasterEggManager easterEggManager;
     private final boolean animatedBorder;
     private String mapName;
@@ -74,22 +79,23 @@ public class ArenaCommon implements GameArena
     private boolean firstMinute;
     private int firstsTimer;
     
-    public ArenaCommon(UUID arenaID, World world, int maxPlayersInTeam, int teamNumber, boolean animatedBorder) 
+    public ArenaCommon(World world, int maxPlayersInTeam, int teamNumber, boolean animatedBorder) 
     {
         this.arenaType = (maxPlayersInTeam == 0 ? ArenaType.SOLO : ArenaType.TEAM);
-        this.arenaID = arenaID;
         this.arenaPlayers = new ArrayList<>();
         this.arenaSpectators = new ArrayList<>();
         this.playersCrash = new HashMap<>();
         this.playersCrashTimer = new HashMap<>();
+        this.playersCrashLocation = new HashMap<>();
+        this.playersCrashInventory = new HashMap<>();
         this.mapName = (maxPlayersInTeam == 0 ? "Solo" : "Equipes de " + maxPlayersInTeam);
-        this.machine = GameAPI.getCoherenceMachine("KTP");
+        this.machine = GameAPI.getCoherenceMachine("UHC");
         this.formatter = new DecimalFormat("00");
         this.timer = null;
         this.maxPlayers = (maxPlayersInTeam == 0 ? 24 : maxPlayersInTeam * teamNumber);
         this.minPlayers = (maxPlayersInTeam == 0 ? 18 : (int) Math.floor(maxPlayers * 0.75));
         this.maxPlayersInTeam = maxPlayersInTeam;
-        this.status = Status.Available;
+        this.status = Status.Generating;
         this.easterEggManager = new EasterEggManager();
         this.animatedBorder = animatedBorder;
         this.world = world;
@@ -98,9 +104,11 @@ public class ArenaCommon implements GameArena
         
         this.worldBorder = this.world.getWorldBorder();
         this.worldBorder.setCenter(0.0D, 0.0D);
-        this.worldBorder.setSize(100.0D);
+        this.netherBorder = Bukkit.getWorlds().get(1).getWorldBorder();
+        this.netherBorder.setCenter(0.0D, 0.0D);
+        this.setupWorldBorder(2000, 0, true, false);
         
-        WorldGenerator.begin(this.world);
+        new WorldGenerator().begin(this, this.world);
         
         for(Entity entity : this.world.getEntities())
         {
@@ -109,9 +117,9 @@ public class ArenaCommon implements GameArena
         
         this.world.setDifficulty(Difficulty.HARD);
         this.world.setGameRuleValue("doDaylightCycle", "false");
+        this.world.setGameRuleValue("randomTickSpeed", "50");
         this.world.setTime(6000L);
         this.world.setStorm(false);
-        this.world.setAnimalSpawnLimit(30);
                 
         this.board = Bukkit.getScoreboardManager().getNewScoreboard();
         this.board.registerNewObjective("uhc", "dummy");
@@ -273,16 +281,23 @@ public class ArenaCommon implements GameArena
         
         ArrayList<ArenaPlayer> remove = new ArrayList<>();
                         
+        for(ArenaPlayer player : this.arenaPlayers)
+        {
+            Player p = player.getPlayer().getPlayer();
+            
+            if(p == null)
+                remove.add(player);
+        }
+        
+        for(ArenaPlayer pPlayer : remove)
+        {
+            this.arenaPlayers.remove(pPlayer);
+        }
+        
         for(int i = 0; i < this.arenaPlayers.size(); i++)
         {
             ArenaPlayer player = this.arenaPlayers.get(i);
-            final Player p = player.getPlayer().getPlayer();
-            
-            if(p == null)
-            {
-                remove.add(player);
-                continue;
-            }
+            Player p = player.getPlayer().getPlayer();
             
             if(this.arenaType == ArenaType.TEAM)
             {
@@ -331,11 +346,6 @@ public class ArenaCommon implements GameArena
             this.increaseStat(p.getUniqueId(), "played_games", 1);
         }
         
-        for(ArenaPlayer pPlayer : remove)
-        {
-            this.arenaPlayers.remove(pPlayer);
-        }
-        
         if(this.arenaType == ArenaType.TEAM)
         {
             ArrayList<ArenaTeam> toRemove = new ArrayList<>();
@@ -354,9 +364,7 @@ public class ArenaCommon implements GameArena
         this.episode = 1;
         this.minutesLeft = 20;
         this.secondsLeft = 0;
-        
-        this.setupWorldBorder(2000, 0, true, false);
-        
+                
         UHC.getPlugin().getSpawnBlock().remove();
         
         this.firstsTimer = Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), new Runnable()
@@ -397,7 +405,7 @@ public class ArenaCommon implements GameArena
                     }
                     else if(episode == 8 && minutesLeft == 8)
                     {
-                        GameUtils.broadcastMessage(Messages.reducted.replace("${COORDS}", "50x50"));
+                        GameUtils.broadcastMessage(Messages.reducted.replace("${COORDS}", "-25 25"));
                     }
                     else if(episode == 8 && minutesLeft == 1)
                     {
@@ -426,7 +434,7 @@ public class ArenaCommon implements GameArena
                     }
                     else if(episode == 7)
                     {
-                        GameUtils.broadcastMessage(Messages.reducted.replace("${COORDS}", "200x200"));
+                        GameUtils.broadcastMessage(Messages.reducted.replace("${COORDS}", "-100 100"));
                     }
                     else if(episode == 8)
                     {
@@ -449,11 +457,15 @@ public class ArenaCommon implements GameArena
     {        
         this.worldBorder.setDamageBuffer(0.0D);
         this.worldBorder.setDamageAmount(0.0D);
+        this.netherBorder.setDamageBuffer(0.0D);
+        this.netherBorder.setDamageAmount(0.0D);
         
         if(warning)
         {
             this.worldBorder.setWarningDistance(100);
             this.worldBorder.setWarningTime(30);
+            this.netherBorder.setWarningDistance(100);
+            this.netherBorder.setWarningTime(30);
         }
         
         if(title)
@@ -465,7 +477,7 @@ public class ArenaCommon implements GameArena
                 TitleAPI.sendTitle(player, 0, 100, 20, ChatColor.DARK_RED + "Attention !", ChatColor.RED + "La bordure de map se rapproche :)");
             }
             
-            GameUtils.broadcastMessage(Messages.reducting.replace("${COORDS}", distance + "x" + distance));
+            GameUtils.broadcastMessage(Messages.reducting.replace("${COORDS}", "-" + distance + " " + distance));
         }
         
         if(time == 0)
@@ -473,6 +485,7 @@ public class ArenaCommon implements GameArena
             try
             {
                 this.worldBorder.setSize(distance);
+                this.netherBorder.setSize(distance);
             }
             catch(Exception ex)
             {
@@ -487,6 +500,7 @@ public class ArenaCommon implements GameArena
             try
             {
                 this.worldBorder.setSize(distance, time);
+                this.netherBorder.setSize(distance, time);
             }
             catch(Exception ex)
             {
@@ -520,14 +534,19 @@ public class ArenaCommon implements GameArena
     {         
         if(team != null)
         {
-            this.machine.getMessageManager().writeSimpleEndMessage("L'équipe gagnante est l'équipe " + team.getChatColor() + team.getName());
-            
+            StringBuilder players = new StringBuilder();
+                                    
             for(UUID player : team.getPlayers())
             {
                 increaseStat(player, "wins", 1);
                 CoinsManager.creditJoueur(player, CoinsUtils.getWinCoins(this.episode), true, true, "Victoire");
                 StarsManager.creditJoueur(player, this.episode * 2, "Victoire");
+                
+                players.append(PlayerUtils.getColoredFormattedPlayerName(Bukkit.getPlayer(player))).append(ChatColor.GRAY).append(", ");
             }
+            
+            String commentary = players.substring(0, players.length() - 2);
+            new SpecifiedWinTemplate().execute("Equipe " + team.getChatColor() + team.getName(), commentary);
         }
         
         GameUtils.broadcastSound(Sound.WITHER_DEATH);
@@ -555,7 +574,7 @@ public class ArenaCommon implements GameArena
     {         
         if(player != null)
         {
-            this.machine.getMessageManager().writeSimpleEndMessage("Le gagnant du jeu est " + player.getPlayer().getName());
+            new PlayerWinTemplate().execute(player.getPlayer());
             increaseStat(player.getPlayerID(), "wins", 1);
             CoinsManager.creditJoueur(player.getPlayerID(), CoinsUtils.getWinCoins(this.episode), true, true, "Victoire");
             StarsManager.creditJoueur(player.getPlayerID(), this.episode * 2, "Victoire");
@@ -610,21 +629,40 @@ public class ArenaCommon implements GameArena
         GameUtils.broadcastSound(Sound.WITHER_SPAWN);
         increaseStat(player, "deaths", 1);
         
-        decreaseStat(player, "max_episode", this.getStat(player, "max_episode"));
-        increaseStat(player, "max_episode", this.episode);
-        
         if(!quitted)
         {
-            Player playerQuitted = Bukkit.getPlayer(player);
-            
-            if(playerQuitted.getKiller() != null)
+            if(Bukkit.getPlayer(player) != null)
             {
-                Player killer = playerQuitted.getKiller();
-                
-                if(!killer.getUniqueId().equals(playerQuitted.getUniqueId()))
+                Player playerQuitted = Bukkit.getPlayer(player);
+
+                if(playerQuitted.getKiller() != null)
                 {
-                    increaseStat(killer.getUniqueId(), "kills", 1);
-                    CoinsManager.creditJoueur(killer.getUniqueId(), CoinsUtils.getKillCoins(this.episode), true, true, "Meurtre d'un joueur");
+                    Player killer = playerQuitted.getKiller();
+
+                    if(!killer.getUniqueId().equals(playerQuitted.getUniqueId()))
+                    {
+                        increaseStat(killer.getUniqueId(), "kills", 1);
+                        CoinsManager.creditJoueur(killer.getUniqueId(), CoinsUtils.getKillCoins(this.episode), true, true, "Meurtre d'un joueur");
+                    }
+                }
+            }
+        }
+        else
+        {
+            if(Bukkit.getPlayer(player) != null)
+            {
+                Player playerQuitted = Bukkit.getPlayer(player);
+                
+                for(ItemStack stack : playerQuitted.getInventory().getContents())
+                {
+                    if(stack != null && stack.getType() != Material.AIR)
+                        playerQuitted.getWorld().dropItem(playerQuitted.getLocation(), stack);
+                }
+                
+                for(ItemStack stack : playerQuitted.getInventory().getArmorContents())
+                {
+                    if(stack != null && stack.getType() != Material.AIR)
+                        playerQuitted.getWorld().dropItem(playerQuitted.getLocation(), stack);
                 }
             }
         }
@@ -637,21 +675,21 @@ public class ArenaCommon implements GameArena
             {
                 this.finishTeam(this.getPlayer(player).getTeam());
             }
+            
+            this.arenaPlayers.remove(this.getPlayer(player));
         }
         else
         {
+            this.arenaPlayers.remove(this.getPlayer(player));
+            
             if(this.getActualPlayers() == 1)
             {
                 this.finishSolo(this.arenaPlayers.get(0));
             }
         }
         
-        this.arenaPlayers.remove(this.getPlayer(player));
-        
         if(!quitted)
             this.arenaSpectators.add(player);
-        else
-            GameUtils.broadcastMessage(Messages.playerQuitted.replace("${PLAYER}", Bukkit.getOfflinePlayer(player).getName()));
     }
     
     public void loseTeam(ArenaTeam team)
@@ -667,11 +705,8 @@ public class ArenaCommon implements GameArena
     {
         loseHider(player);
         
-        if(PermissionsBukkit.hasPermission(player.getUniqueId(), "uhc.spectate"))
-            player.sendMessage(Messages.spectator);
-        
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "/gamemode " + player.getName() + " 3");
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1));
+        player.setGameMode(GameMode.SPECTATOR);
     }
     
     public void loseHider(Player player)
@@ -684,9 +719,26 @@ public class ArenaCommon implements GameArena
     
     public void playerDisconnect(final UUID uuid)
     {
+        GameAPI.addRejoinList(uuid, 180);
+        GameUtils.broadcastMessage(Messages.disconnected.replace("${PLAYER}", Bukkit.getOfflinePlayer(uuid).getName()));
+        this.objective.removeReceiver(Bukkit.getOfflinePlayer(uuid));
+        
+        if(this.playersCrashLocation.containsKey(uuid))
+            this.playersCrashLocation.remove(uuid);
+        
+        if(this.playersCrashInventory.containsKey(uuid))
+            this.playersCrashInventory.remove(uuid);
+        
+        if(Bukkit.getPlayer(uuid) != null)
+        {
+            this.playersCrashLocation.put(uuid, Bukkit.getPlayer(uuid).getLocation());
+            this.playersCrashInventory.put(uuid, Bukkit.getPlayer(uuid).getInventory());
+        }
+        
         this.playersCrashTimer.put(uuid, Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), new Runnable()
         {
             int before = 0;
+            int now = 0;
             boolean bool = false;
             
             @Override
@@ -700,23 +752,57 @@ public class ArenaCommon implements GameArena
                     bool = true;
                 }
                 
-                if(before == 600)
+                if(before == 300)
                 {
                     GameAPI.removeRejoinList(uuid);
                     lose(uuid, true);
-                    playerReconnected(uuid);
+                    playerReconnected(uuid, true);
                 }
                 
-                before++;                
+                if(now == 180)
+                {
+                    GameAPI.removeRejoinList(uuid);
+                    lose(uuid, true);
+                    playerReconnected(uuid, true);
+                }
+                
+                before++;
+                now++;
                 playersCrash.put(uuid, before);
             }
         }, 20L, 20L));
     }
     
-    public void playerReconnected(UUID uuid)
+    public void playerReconnected(UUID uuid, boolean outoftime)
     {
         if(this.playersCrashTimer.containsKey(uuid))
             Bukkit.getScheduler().cancelTask(this.playersCrashTimer.get(uuid));
+        
+        if(outoftime)
+        {
+            GameUtils.broadcastMessage(Messages.timeOut.replace("${PLAYER}", Bukkit.getOfflinePlayer(uuid).getName()));
+            
+            if(this.playersCrashLocation.containsKey(uuid) && this.playersCrashInventory.containsKey(uuid))
+            {
+                for(ItemStack stack : this.playersCrashInventory.get(uuid).getContents())
+                {
+                    if(stack != null && stack.getType() != Material.AIR)
+                        this.world.dropItemNaturally(this.playersCrashLocation.get(uuid), stack);
+                }
+                
+                for(ItemStack stack : this.playersCrashInventory.get(uuid).getArmorContents())
+                {
+                    if(stack != null && stack.getType() != Material.AIR)
+                        this.world.dropItemNaturally(this.playersCrashLocation.get(uuid), stack);
+                }
+            }
+            
+            return;
+        }
+        
+        GameUtils.broadcastMessage(Messages.reconnected.replace("${PLAYER}", Bukkit.getPlayer(uuid).getName()));
+        Bukkit.getPlayer(uuid).setScoreboard(this.board);
+        this.objective.addReceiver(Bukkit.getPlayer(uuid));
     }
     
     public void stumpPlayer(ArenaPlayer aPlayer)
@@ -774,11 +860,6 @@ public class ArenaCommon implements GameArena
     public void increaseStat(UUID uuid, String statName, int count)
     {
         StatsApi.increaseStat(uuid, "uhc_" + (this.arenaType == ArenaType.TEAM ? "team" : "solo"), statName, count);
-    }
-    
-    public void decreaseStat(UUID uuid, String statName, int count)
-    {
-        StatsApi.decreaseStat(uuid, "uhc_" + (this.arenaType == ArenaType.TEAM ? "team" : "solo"), statName, count);
     }
     
     public void setMapName(String mapName)
@@ -902,12 +983,6 @@ public class ArenaCommon implements GameArena
     {
         return this.maxPlayersInTeam;
     }
-
-    @Override
-    public UUID getUUID()
-    {
-        return this.arenaID;
-    }
     
     public int getPlayerCrashTimerId(UUID uuid)
     {
@@ -952,6 +1027,11 @@ public class ArenaCommon implements GameArena
         return this.objective;
     }
     
+    public WorldBorder getWorldBorder()
+    {
+        return this.worldBorder;
+    }
+    
     @Override
     public int countGamePlayers()
     {
@@ -983,12 +1063,6 @@ public class ArenaCommon implements GameArena
     public boolean isSpectator(UUID uuid)
     {
         return this.arenaSpectators.contains(uuid);
-    }
-
-    @Override
-    public boolean isFamous()
-    {
-        return false;
     }
     
     public boolean isFirst30Seconds()
