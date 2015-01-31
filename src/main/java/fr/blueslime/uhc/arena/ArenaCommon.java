@@ -802,6 +802,7 @@ public class ArenaCommon implements GameArena
         
         GameUtils.broadcastMessage(Messages.reconnected.replace("${PLAYER}", Bukkit.getPlayer(uuid).getName()));
         Bukkit.getPlayer(uuid).setScoreboard(this.board);
+        Bukkit.getPlayer(uuid).setGameMode(GameMode.SURVIVAL);
         this.objective.addReceiver(Bukkit.getPlayer(uuid));
     }
     
