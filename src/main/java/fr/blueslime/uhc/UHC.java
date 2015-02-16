@@ -1,6 +1,7 @@
 package fr.blueslime.uhc;
 
 import fr.blueslime.uhc.arena.ArenaCommon;
+import fr.blueslime.uhc.commands.CommandCloseIfEmpty;
 import fr.blueslime.uhc.events.*;
 import fr.blueslime.uhc.arena.SpawnBlock;
 import fr.blueslime.uhc.commands.CommandAll;
@@ -13,6 +14,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
+
 import net.minecraft.server.v1_8_R1.BiomeBase;
 import net.minecraft.server.v1_8_R1.BiomeForest;
 import net.minecraft.server.v1_8_R1.BiomeMeta;
@@ -58,7 +60,8 @@ public class UHC extends JavaPlugin
         this.getCommand("uhc").setExecutor(new CommandUHC());
         this.getCommand("inv").setExecutor(new CommandInv());
         this.getCommand("all").setExecutor(new CommandAll());
-        
+        this.getCommand("closeifempty").setExecutor(new CommandCloseIfEmpty());
+
         this.registerEvents();
                 
         this.startTimer = Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), new Runnable()
@@ -79,7 +82,7 @@ public class UHC extends JavaPlugin
         Bukkit.getScheduler().cancelTask(this.startTimer);
                 
         this.spawnBlock = new SpawnBlock(this);
-	this.spawnBlock.generate();
+        this.spawnBlock.generate();
         
         this.comPort = getConfig().getInt("com-port");
         this.bungeeName = getConfig().getString("BungeeName");
@@ -156,28 +159,29 @@ public class UHC extends JavaPlugin
         Bukkit.getPluginManager().registerEvents(new UHCBlockFromToEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerBucketEmptyEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerTeleportEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerMoveEvent(), this);
     }
-    
+
     public void patchBiomes()
     {
         BiomeBase[] a = BiomeBase.getBiomes();
         BiomeForest nb1 = new BiomeForest(0, 0);
         BiomeForest nb2 = new BiomeForest(24, 0);
- 
+
         try
         {
             Method m1 = BiomeBase.class.getDeclaredMethod("a", int.class, boolean.class);
             m1.setAccessible(true);
- 
+
             Method m2 = BiomeBase.class.getDeclaredMethod("a", String.class);
             m2.setAccessible(true);
 
             Field ff2 = BiomeBase.class.getDeclaredField("ah");
             ff2.setAccessible(true);
- 
+
             Method m3 = BiomeBase.class.getDeclaredMethod("a", int.class);
             m3.setAccessible(true);
- 
+
             Method m4 = BiomeBase.class.getDeclaredMethod("a", float.class, float.class);
             m4.setAccessible(true);
 
@@ -188,16 +192,15 @@ public class UHC extends JavaPlugin
 
             mobs.add(new BiomeMeta(EntitySheep.class, 15, 4, 4));
             mobs.add(new BiomeMeta(EntityRabbit.class, 15, 3, 5));
-            mobs.add(new BiomeMeta(EntityPig.class, 20, 10, 15));
-            mobs.add(new BiomeMeta(EntityChicken.class, 21, 10, 15));
-            mobs.add(new BiomeMeta(EntityCow.class, 20, 10, 15));
-            mobs.add(new BiomeMeta(EntityWolf.class, 6, 5, 30));
+            mobs.add(new BiomeMeta(EntityPig.class, 20, 4, 8));
+            mobs.add(new BiomeMeta(EntityChicken.class, 21, 5, 8));
+            mobs.add(new BiomeMeta(EntityCow.class, 20, 6, 8));
+            mobs.add(new BiomeMeta(EntityWolf.class, 6, 6, 15));
 
             ff.set(nb1, mobs);
             ff.set(nb2, mobs);
- 
-            m1.invoke(nb1, 353825, false);
 
+            m1.invoke(nb1, 353825, false);
             m2.invoke(nb1, "Forest");
             m3.invoke(nb1, 5159473);
             m4.invoke(nb1, 0.7F, 0.8F);
@@ -206,7 +209,7 @@ public class UHC extends JavaPlugin
             m2.invoke(nb2, "Forest");
             m3.invoke(nb2, 5159474);
             m4.invoke(nb2, 0.7F, 0.8F);
- 
+
             Field f1 = BiomeBase.class.getDeclaredField("OCEAN");
             Field f2 = BiomeBase.class.getDeclaredField("DEEP_OCEAN");
             Field f3 = BiomeBase.class.getDeclaredField("ad");

@@ -117,7 +117,7 @@ public class ArenaCommon implements GameArena
         
         this.world.setDifficulty(Difficulty.HARD);
         this.world.setGameRuleValue("doDaylightCycle", "false");
-        this.world.setGameRuleValue("randomTickSpeed", "50");
+        this.world.setGameRuleValue("randomTickSpeed", "30");
         this.world.setTime(6000L);
         this.world.setStorm(false);
                 
