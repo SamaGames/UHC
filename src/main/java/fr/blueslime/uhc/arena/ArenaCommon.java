@@ -4,13 +4,6 @@ import com.connorlinfoot.titleapi.TitleAPI;
 import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
 import fr.blueslime.uhc.utils.CoinsUtils;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
 import net.samagames.gameapi.GameAPI;
 import net.samagames.gameapi.GameUtils;
 import net.samagames.gameapi.json.Status;
@@ -24,15 +17,7 @@ import net.samagames.utils.PlayerUtils;
 import net.zyuiop.MasterBundle.StarsManager;
 import net.zyuiop.coinsManager.CoinsManager;
 import net.zyuiop.statsapi.StatsApi;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Difficulty;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
-import org.bukkit.WorldBorder;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -45,6 +30,10 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
 
 public class ArenaCommon implements GameArena
 {
@@ -92,8 +81,8 @@ public class ArenaCommon implements GameArena
         this.machine = GameAPI.getCoherenceMachine("UHC");
         this.formatter = new DecimalFormat("00");
         this.timer = null;
-        this.maxPlayers = (maxPlayersInTeam == 0 ? 24 : maxPlayersInTeam * teamNumber);
-        this.minPlayers = (maxPlayersInTeam == 0 ? 18 : (int) Math.floor(maxPlayers * 0.75));
+        this.maxPlayers = (maxPlayersInTeam == 0 ? 16 : maxPlayersInTeam * teamNumber);
+        this.minPlayers = (maxPlayersInTeam == 0 ? 8 : (int) Math.floor(maxPlayers * 0.75));
         this.maxPlayersInTeam = maxPlayersInTeam;
         this.status = Status.Generating;
         this.easterEggManager = new EasterEggManager();
@@ -391,6 +380,10 @@ public class ArenaCommon implements GameArena
             public void run()
             {
                 updateScoreboard();
+
+                for(Player player : Bukkit.getOnlinePlayers())
+                    player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
+
                 secondsLeft--;
                 
                 if(secondsLeft == -1)
@@ -806,29 +799,6 @@ public class ArenaCommon implements GameArena
         this.objective.addReceiver(Bukkit.getPlayer(uuid));
     }
     
-    public void stumpPlayer(ArenaPlayer aPlayer)
-    {        
-        if(this.arenaPlayers.contains(aPlayer))
-            this.arenaPlayers.remove(aPlayer);
-        
-        if (!this.isGameStarted())
-        {
-            GameAPI.getManager().refreshArena(this);
-            return;
-        }
-        
-        if (this.getActualPlayers() == 0)
-        {
-            this.finishSolo(null);
-        }
-        else if (this.getArenaPlayers().isEmpty())
-        {
-            Bukkit.shutdown();
-        }
-        
-        GameAPI.getManager().refreshArena(this);
-    }
-    
     public void createTeam(ArenaTeam team)
     {
         this.arenaTeams.add(team);
@@ -862,21 +832,11 @@ public class ArenaCommon implements GameArena
     {
         StatsApi.increaseStat(uuid, "uhc_" + (this.arenaType == ArenaType.TEAM ? "team" : "solo"), statName, count);
     }
-    
-    public void setMapName(String mapName)
-    {
-        this.mapName = mapName;
-    }
-    
+
     @Override
     public void setStatus(Status status)
     {
         this.status = status;
-    }
-    
-    public int getStat(UUID uuid, String statName)
-    {
-        return StatsApi.getPlayerStat(uuid, "uhc_" + (this.arenaType == ArenaType.TEAM ? "team" : "solo"), statName);
     }
     
     public ArenaType getArenaType()

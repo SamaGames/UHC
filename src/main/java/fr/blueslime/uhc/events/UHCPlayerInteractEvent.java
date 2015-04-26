@@ -14,7 +14,7 @@ public class UHCPlayerInteractEvent implements Listener
     @EventHandler
     public void event(PlayerInteractEvent event)
     {
-        if(!UHC.getPlugin().getArena().hasPlayer(event.getPlayer().getUniqueId()))
+        if(!UHC.getPlugin().getArena().hasPlayer(event.getPlayer().getUniqueId()) || !UHC.getPlugin().getArena().isGameStarted())
         {
             event.setCancelled(true);
         }

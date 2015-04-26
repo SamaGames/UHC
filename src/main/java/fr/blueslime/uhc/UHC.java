@@ -1,34 +1,26 @@
 package fr.blueslime.uhc;
 
 import fr.blueslime.uhc.arena.ArenaCommon;
-import fr.blueslime.uhc.commands.CommandCloseIfEmpty;
-import fr.blueslime.uhc.events.*;
 import fr.blueslime.uhc.arena.SpawnBlock;
 import fr.blueslime.uhc.commands.CommandAll;
+import fr.blueslime.uhc.commands.CommandCloseIfEmpty;
 import fr.blueslime.uhc.commands.CommandInv;
 import fr.blueslime.uhc.commands.CommandUHC;
+import fr.blueslime.uhc.events.*;
 import fr.blueslime.uhc.gui.Gui;
+import net.minecraft.server.v1_8_R2.*;
+import net.samagames.gameapi.GameAPI;
+import net.samagames.gameapi.json.Status;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
-
-import net.minecraft.server.v1_8_R1.BiomeBase;
-import net.minecraft.server.v1_8_R1.BiomeForest;
-import net.minecraft.server.v1_8_R1.BiomeMeta;
-import net.minecraft.server.v1_8_R1.EntityChicken;
-import net.minecraft.server.v1_8_R1.EntityCow;
-import net.minecraft.server.v1_8_R1.EntityPig;
-import net.minecraft.server.v1_8_R1.EntityRabbit;
-import net.minecraft.server.v1_8_R1.EntitySheep;
-import net.minecraft.server.v1_8_R1.EntityWolf;
-import net.samagames.gameapi.GameAPI;
-import net.samagames.gameapi.json.Status;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class UHC extends JavaPlugin
 {
@@ -158,8 +150,7 @@ public class UHC extends JavaPlugin
         Bukkit.getPluginManager().registerEvents(new UHCSignChangeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCBlockFromToEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerBucketEmptyEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCPlayerTeleportEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCPlayerMoveEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCPlayerPortalEvent(), this);
     }
 
     public void patchBiomes()
@@ -188,14 +179,14 @@ public class UHC extends JavaPlugin
             Field ff = BiomeBase.class.getDeclaredField("au");
             ff.setAccessible(true);
 
-            ArrayList<BiomeMeta> mobs = new ArrayList<>();
+            ArrayList<BiomeBase.BiomeMeta> mobs = new ArrayList<>();
 
-            mobs.add(new BiomeMeta(EntitySheep.class, 15, 4, 4));
-            mobs.add(new BiomeMeta(EntityRabbit.class, 15, 3, 5));
-            mobs.add(new BiomeMeta(EntityPig.class, 20, 4, 8));
-            mobs.add(new BiomeMeta(EntityChicken.class, 21, 5, 8));
-            mobs.add(new BiomeMeta(EntityCow.class, 20, 6, 8));
-            mobs.add(new BiomeMeta(EntityWolf.class, 6, 6, 15));
+            mobs.add(new BiomeBase.BiomeMeta(EntitySheep.class, 15, 4, 4));
+            mobs.add(new BiomeBase.BiomeMeta(EntityRabbit.class, 15, 3, 5));
+            mobs.add(new BiomeBase.BiomeMeta(EntityPig.class, 20, 4, 8));
+            mobs.add(new BiomeBase.BiomeMeta(EntityChicken.class, 21, 5, 8));
+            mobs.add(new BiomeBase.BiomeMeta(EntityCow.class, 20, 6, 8));
+            mobs.add(new BiomeBase.BiomeMeta(EntityWolf.class, 6, 6, 15));
 
             ff.set(nb1, mobs);
             ff.set(nb2, mobs);

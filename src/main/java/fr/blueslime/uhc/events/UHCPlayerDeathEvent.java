@@ -1,6 +1,5 @@
 package fr.blueslime.uhc.events;
 
-import fr.blueslime.uhc.events.*;
 import fr.blueslime.uhc.UHC;
 import fr.blueslime.uhc.arena.ArenaCommon;
 import net.samagames.gameapi.GameAPI;
@@ -21,7 +20,7 @@ public class UHCPlayerDeathEvent implements Listener
     @EventHandler
     public void event(PlayerDeathEvent event)
     {
-        final Player deadPlayer = (Player) event.getEntity();
+        final Player deadPlayer = event.getEntity();
         ArenaCommon arena = UHC.getPlugin().getArena();
                 
         if(arena.isGameStarted())
@@ -44,7 +43,7 @@ public class UHCPlayerDeathEvent implements Listener
                             @Override
                             public void run()
                             {
-                                time++;
+                                time = time + 1;
                                 
                                 if(time == 20)
                                 {

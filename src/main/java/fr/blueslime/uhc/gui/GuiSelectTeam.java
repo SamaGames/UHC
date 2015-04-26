@@ -6,13 +6,8 @@ import fr.blueslime.uhc.arena.ArenaCommon;
 import fr.blueslime.uhc.arena.ArenaPlayer;
 import fr.blueslime.uhc.arena.ArenaTeam;
 import fr.blueslime.uhc.utils.ItemUtils;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.UUID;
-import net.minecraft.server.v1_8_R1.EntityHuman;
-import net.minecraft.server.v1_8_R1.TileEntitySign;
+import net.minecraft.server.v1_8_R2.EntityHuman;
+import net.minecraft.server.v1_8_R2.TileEntitySign;
 import net.samagames.permissionsbukkit.PermissionsBukkit;
 import net.samagames.utils.FancyMessage;
 import org.bukkit.Bukkit;
@@ -20,11 +15,17 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_8_R1.block.CraftSign;
-import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R2.block.CraftSign;
+import org.bukkit.craftbukkit.v1_8_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.UUID;
 
 public class GuiSelectTeam implements Gui
 {
