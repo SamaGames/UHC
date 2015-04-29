@@ -19,8 +19,8 @@ public class UHCCraftItemEvent implements Listener
         {
             if(event.getInventory().contains(Material.GOLD_NUGGET))
             {
-                event.setCancelled(true);
                 event.getWhoClicked().sendMessage(ChatColor.RED + "Ce craft est désactivé !");
+                event.setCancelled(true);
             }
         }
     }
