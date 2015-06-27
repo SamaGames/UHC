@@ -16,9 +16,9 @@ public class UHCEntityDamageByEntityEvent implements Listener
     {
         if(event.getDamager().getType() == EntityType.PLAYER)
         {
-            if(!UHC.getPlugin().getArena().hasPlayer(event.getDamager().getUniqueId()))
+            if(!UHC.getPlugin().getArena().hasPlayer((Player) event.getDamager()))
                 event.setCancelled(true);
-            else if(UHC.getPlugin().getArena().isSpectator(event.getDamager().getUniqueId()))
+            else if(UHC.getPlugin().getArena().isSpectator((Player) event.getDamager()))
                 event.setCancelled(true);
         }
         
@@ -33,9 +33,9 @@ public class UHCEntityDamageByEntityEvent implements Listener
             
             if(event.getDamager().getType() == EntityType.PLAYER)
             {
-                if(!UHC.getPlugin().getArena().hasPlayer(event.getDamager().getUniqueId()))
+                if(!UHC.getPlugin().getArena().hasPlayer((Player) event.getDamager()))
                     event.setCancelled(true);
-                else if(UHC.getPlugin().getArena().isSpectator(event.getDamager().getUniqueId()))
+                else if(UHC.getPlugin().getArena().isSpectator((Player) event.getDamager()))
                     event.setCancelled(true);
                 else if(UHC.getPlugin().getArena().getArenaType() == ArenaType.TEAM && UHC.getPlugin().getArena().getPlayer(damaged.getUniqueId()).hasTeam() && UHC.getPlugin().getArena().getPlayer(damaged.getUniqueId()).getTeam().hasPlayer(event.getDamager().getUniqueId()))
                     event.setCancelled(true);

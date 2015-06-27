@@ -1,11 +1,10 @@
 package fr.blueslime.uhc.arena;
 
 import fr.blueslime.uhc.Messages;
-import fr.blueslime.uhc.UHC;
 import fr.blueslime.uhc.arena.ArenaCommon.ArenaType;
-import net.samagames.gameapi.GameUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 
 public class EndTimer extends Thread
 {
@@ -26,25 +25,26 @@ public class EndTimer extends Thread
 
     public void run()
     {
-        while (cont)
+        while (this.cont)
         {
             try
             {
                 sleep(1000);
-                time--;
-                formatTime();
-                setTimeout((int) time);
+
+                this.time--;
+                this.formatTime();
+                this.setTimeout((int) time);
 
                 if (parent.getActualPlayers() < parent.getMinPlayers())
                 {
-                    setTimeout(0);
+                    this.setTimeout(0);
                     this.end();
                     
                     return;
                 }
                 else if (time == 0)
                 {
-                    setTimeout(0);
+                    this.setTimeout(0);
                     this.end();
                     
                     if(parent.getArenaType() == ArenaType.TEAM)
@@ -100,9 +100,9 @@ public class EndTimer extends Thread
                 }
             }
         }
-        if (time != null) {
-            GameUtils.broadcastMessage(Messages.endOfGameIn.replace("${TIME}", time));
-        }
+
+        if (time != null)
+            Bukkit.broadcastMessage(Messages.endOfGameIn.toString().replace("${TIME}", time));
     }
 
     public void setTimeout(int seconds)
@@ -110,22 +110,15 @@ public class EndTimer extends Thread
         boolean ring = false;
         
         if (seconds <= 5 && seconds != 0)
-        {
             ring = true;
-        }
         
-        for(ArenaPlayer aPlayer : parent.getArenaPlayers())
+        for(Player player : Bukkit.getOnlinePlayers())
         {
-            aPlayer.getPlayer().getPlayer().setLevel(seconds);
-            
             if (ring)
-            {
-                aPlayer.getPlayer().getPlayer().playSound(aPlayer.getPlayer().getPlayer().getLocation(), Sound.NOTE_PIANO, 1, 1);
-            }
+                player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1, 1);
+
             if (seconds == 0)
-            {
-                aPlayer.getPlayer().getPlayer().playSound(aPlayer.getPlayer().getPlayer().getLocation(), Sound.NOTE_PLING, 1, 1);
-            }
+                player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
         }
     }
 }

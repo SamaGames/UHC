@@ -4,21 +4,13 @@ import com.connorlinfoot.titleapi.TitleAPI;
 import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
 import fr.blueslime.uhc.utils.CoinsUtils;
-import net.samagames.gameapi.GameAPI;
-import net.samagames.gameapi.GameUtils;
-import net.samagames.gameapi.json.Status;
-import net.samagames.gameapi.themachine.CoherenceMachine;
-import net.samagames.gameapi.themachine.messages.StaticMessages;
-import net.samagames.gameapi.themachine.messages.templates.PlayerWinTemplate;
-import net.samagames.gameapi.themachine.messages.templates.SpecifiedWinTemplate;
-import net.samagames.gameapi.types.GameArena;
-import net.samagames.utils.ObjectiveSign;
-import net.samagames.utils.PlayerUtils;
-import net.zyuiop.MasterBundle.StarsManager;
-import net.zyuiop.coinsManager.CoinsManager;
-import net.zyuiop.statsapi.StatsApi;
+import net.samagames.api.games.Status;
+import net.samagames.core.api.games.Game;
+import net.samagames.tools.GameUtils;
+import net.samagames.tools.PlayerUtils;
+import net.samagames.tools.chat.ChatUtils;
+import net.samagames.tools.scoreboards.ObjectiveSign;
 import org.bukkit.*;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -26,7 +18,6 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -35,61 +26,45 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-public class ArenaCommon implements GameArena
+public class ArenaCommon extends Game<ArenaPlayer>
 {
-    public static enum ArenaType { SOLO, TEAM };
+    public enum ArenaType { SOLO, TEAM };
     
     private final ArenaType arenaType;
     private final World world;
-    private final CoherenceMachine machine;
-    private final ArrayList<ArenaPlayer> arenaPlayers;
-    private final ArrayList<UUID> arenaSpectators;
+    private final HashMap<UUID, Location> disconnectLocation;
+    private final HashMap<UUID, PlayerInventory> disconnectInventory;
     private final ArrayList<ArenaTeam> arenaTeams;
     private final ArrayList<Location> spawns;
-    private final HashMap<UUID, Integer> playersCrash;
-    private final HashMap<UUID, Integer> playersCrashTimer;
-    private final HashMap<UUID, Location> playersCrashLocation;
-    private final HashMap<UUID, PlayerInventory> playersCrashInventory;
-    private final int maxPlayers, minPlayers, maxPlayersInTeam;
     private final ObjectiveSign objective;
     private final Scoreboard board;
     private final NumberFormat formatter;
     private final WorldBorder worldBorder;
     private final WorldBorder netherBorder;
     private final EasterEggManager easterEggManager;
-    private final boolean animatedBorder;
-    private String mapName;
-    private BukkitTask timer;
-    private Status status;
+    private final int maxPlayersInTeam;
+    private final boolean animatedBorders;
     private int episode;
     private int minutesLeft;
     private int secondsLeft;
-    private boolean first30seconds;
-    private boolean firstMinute;
     private int firstsTimer;
-    
-    public ArenaCommon(World world, int maxPlayersInTeam, int teamNumber, boolean animatedBorder) 
+    private boolean firstMinute;
+    private boolean firstTenMinutes;
+
+    public ArenaCommon(World world, int maxPlayersInTeam, int teamNumber, boolean animatedBorders)
     {
+        super("uhc", "UHC", ArenaPlayer.class);
+
         this.arenaType = (maxPlayersInTeam == 0 ? ArenaType.SOLO : ArenaType.TEAM);
-        this.arenaPlayers = new ArrayList<>();
-        this.arenaSpectators = new ArrayList<>();
-        this.playersCrash = new HashMap<>();
-        this.playersCrashTimer = new HashMap<>();
-        this.playersCrashLocation = new HashMap<>();
-        this.playersCrashInventory = new HashMap<>();
-        this.mapName = (maxPlayersInTeam == 0 ? "Solo" : "Equipes de " + maxPlayersInTeam);
-        this.machine = GameAPI.getCoherenceMachine("UHC");
+        this.disconnectLocation = new HashMap<>();
+        this.disconnectInventory = new HashMap<>();
         this.formatter = new DecimalFormat("00");
-        this.timer = null;
-        this.maxPlayers = (maxPlayersInTeam == 0 ? 16 : maxPlayersInTeam * teamNumber);
-        this.minPlayers = (maxPlayersInTeam == 0 ? 8 : (int) Math.floor(maxPlayers * 0.75));
         this.maxPlayersInTeam = maxPlayersInTeam;
-        this.status = Status.Generating;
         this.easterEggManager = new EasterEggManager();
-        this.animatedBorder = animatedBorder;
         this.world = world;
-        this.first30seconds = false;
         this.firstMinute = false;
+        this.firstTenMinutes = false;
+        this.animatedBorders = animatedBorders;
         
         this.worldBorder = this.world.getWorldBorder();
         this.worldBorder.setCenter(0.0D, 0.0D);
@@ -98,11 +73,7 @@ public class ArenaCommon implements GameArena
         this.setupWorldBorder(2000, 0, true, false);
         
         new WorldGenerator().begin(this, this.world);
-        
-        for(Entity entity : this.world.getEntities())
-        {
-            entity.remove();
-        }
+        this.world.getEntities().forEach(org.bukkit.entity.Entity::remove);
         
         this.world.setDifficulty(Difficulty.HARD);
         this.world.setGameRuleValue("doDaylightCycle", "false");
@@ -185,159 +156,59 @@ public class ArenaCommon implements GameArena
         Objective healthObjective = this.board.registerNewObjective("Vie", "health");
         healthObjective.setDisplayName("Vie");
         healthObjective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
-        
-        this.timer = Bukkit.getScheduler().runTaskTimer(UHC.getPlugin(), new BeginTimer(this), 20L, 20L);
     }
-    
-    public void joinPlayer(UUID playerID)
-    {
-        Player player = Bukkit.getPlayer(playerID);
-        ArenaPlayer aPlayer = new ArenaPlayer(player);
 
-        player.sendMessage(StaticMessages.JOINARENA.get(this.machine));
-        player.teleport(new Location(this.world, 0.5D, 162, 0.5D));
-        this.arenaPlayers.add(aPlayer);
-        this.objective.addReceiver(player);
-        this.machine.getMessageManager().writePlayerJoinArenaMessage(player, this);
-
-        setupPlayer(player);
-
-        for(ArenaPlayer pPlayer : this.arenaPlayers)
-        { 
-            if(pPlayer.getPlayer().getPlayer() != null)
-            {
-                pPlayer.getPlayer().getPlayer().getPlayer().getPlayer().hidePlayer(player);
-                player.hidePlayer(pPlayer.getPlayer().getPlayer().getPlayer().getPlayer());
-            }
-        }
-
-        ArrayList<ArenaPlayer> removal = new ArrayList<>();
-
-        for(ArenaPlayer pPlayer : this.arenaPlayers)
-        {            
-            if(pPlayer.getPlayer().getPlayer() == null)
-            {
-                removal.add(pPlayer);
-                continue;
-            }
-
-            pPlayer.getPlayer().getPlayer().getPlayer().getPlayer().showPlayer(player);
-            player.showPlayer(pPlayer.getPlayer().getPlayer().getPlayer().getPlayer());
-        }
-
-        for (ArenaPlayer pPlayer : removal)
-        {
-            this.arenaPlayers.remove(pPlayer);
-        }
-
-        player.getInventory().clear();
-        
-        if(this.arenaType == ArenaType.TEAM)
-            player.getInventory().setItem(0, this.getSelectTeamItem());
-        
-        player.getInventory().setItem(8, this.machine.getLeaveItem());
-        player.setScoreboard(this.board);
-        this.machine.getMessageManager().writeWelcomeInGameMessage(player);
-        
-        if(this.arenaType == ArenaType.TEAM)
-            player.sendMessage(Messages.warningTeam);
-
-        GameAPI.getManager().refreshArena(this);
-    }
-    
-    public void setupPlayer(Player player)
-    {
-        player.setGameMode(GameMode.ADVENTURE);
-        player.setHealth(20.0D);
-        player.setSaturation(20);
-        player.getInventory().clear();
-        player.setExp(0.0F);
-        player.setLevel(0);
-        
-        for(PotionEffect pe : player.getActivePotionEffects())
-            player.removePotionEffect(pe.getType());
-    }
-    
+    @Override
     public void startGame()
     {
-        this.status = Status.InGame;
-        final ArenaCommon instance = this;
-        
-        if(this.timer != null)
-            this.timer.cancel();
-        
-        this.timer = null;
-        
-        ArrayList<ArenaPlayer> remove = new ArrayList<>();
-                        
-        for(ArenaPlayer player : this.arenaPlayers)
+        int i = 0;
+
+        for(UUID playerUUID : this.gamePlayers.keySet())
         {
-            Player p = player.getPlayer().getPlayer();
-            
-            if(p == null)
-                remove.add(player);
-        }
-        
-        for(ArenaPlayer pPlayer : remove)
-        {
-            this.arenaPlayers.remove(pPlayer);
-        }
-        
-        for(int i = 0; i < this.arenaPlayers.size(); i++)
-        {
-            ArenaPlayer player = this.arenaPlayers.get(i);
-            Player p = player.getPlayer().getPlayer();
+            ArenaPlayer arenaPlayer = this.gamePlayers.get(playerUUID);
+            Player player = arenaPlayer.getPlayerIfOnline();
             
             if(this.arenaType == ArenaType.TEAM)
             {
-                if(!player.hasTeam())
+                if(!arenaPlayer.hasTeam())
                 {
                     for(ArenaTeam team : UHC.getPlugin().getArena().getTeamAlive())
                     {
                         if(!team.isFull() && !team.isLocked())
                         {
-                            team.join(player);
+                            team.join(arenaPlayer);
                             break;
                         }
                     }
 
-                    if(!player.hasTeam())
-                    {
-                        player.getPlayer().sendMessage(ChatColor.RED + "Aucune team était apte à vous reçevoir, vous avez été réenvoyé dans le lobby.");
-                        GameAPI.kickPlayer(player.getPlayer());
-                    }
+                    if(!arenaPlayer.hasTeam())
+                        this.gameManager.kickPlayer(player, ChatColor.RED + "Aucune équipe était apte à vous reçevoir, vous avez été réenvoyé dans le lobby.");
                 }
             }
                         
-            this.setupPlayer(p);
-            
-            p.setFireTicks(0);
-            p.sendMessage(StaticMessages.GAMESTART.get(this.machine));
-            
-            System.out.println("Teleporting player: " + p.getName());
-            
+            this.setupPlayer(player.getPlayer());
+
+            player.getPlayer().setFireTicks(0);
+
             if(this.arenaType == ArenaType.TEAM)
-                p.teleport(player.getTeam().getSpawnLocation());
+                player.teleport(arenaPlayer.getTeam().getSpawnLocation());
             else
-                p.teleport(this.spawns.get(i));
+                player.teleport(this.spawns.get(i));
+
+            player.setGameMode(GameMode.SURVIVAL);
+            player.setExp(0.0F);
+            player.setLevel(0);
             
-            p.setGameMode(GameMode.SURVIVAL);
-            p.setExp(0.0F);
-            p.setLevel(0);
-            
-            for(Player p2 : Bukkit.getOnlinePlayers())
-            {
-                if(!p2.getName().equals(p.getName()))
-                    p.showPlayer(p2);
-            }
-            
-            UHC.getPlugin().closeGui(p);
-            this.increaseStat(p.getUniqueId(), "played_games", 1);
+            UHC.getPlugin().closeGui(player);
+            this.increaseStat(playerUUID, "played_games", 1);
+
+            i++;
         }
         
         if(this.arenaType == ArenaType.TEAM)
         {
             ArrayList<ArenaTeam> toRemove = new ArrayList<>();
+
             for(ArenaTeam team : this.arenaTeams)
             {
                 if(team.isEmpty())
@@ -347,8 +218,6 @@ public class ArenaCommon implements GameArena
             for(ArenaTeam team : toRemove)
                 this.arenaTeams.remove(team);
         }
-
-        GameAPI.getManager().refreshArena(this);
                 
         this.episode = 1;
         this.minutesLeft = 20;
@@ -358,92 +227,150 @@ public class ArenaCommon implements GameArena
         
         this.firstsTimer = Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), new Runnable()
         {
-            private int temp = 0;
+            private int seconds = 0;
             
             @Override
             public void run()
             {
-                temp++;
+                this.seconds++;
                 
-                if(temp == 60)
+                if(this.seconds == 60)
                 {
-                    first30seconds = true;
-                    GameUtils.broadcastMessage(Messages.damageActivated);
+                    firstMinute = true;
+                    Bukkit.broadcastMessage(Messages.damageActivated.toString());
                     startGameCallback();
                 }
             } 
         }, 20L, 20L);
         
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), new Runnable()
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), () ->
         {
-            @Override
-            public void run()
-            {
-                updateScoreboard();
+            this.updateScoreboard();
 
-                for(Player player : Bukkit.getOnlinePlayers())
-                    player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
+            for (Player player : Bukkit.getOnlinePlayers())
+                player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
 
-                secondsLeft--;
-                
-                if(secondsLeft == -1)
-                {
-                    minutesLeft--;
-                    secondsLeft = 59;
-                    
-                    if(episode == 8 && minutesLeft == 10)
-                    {
-                        if(animatedBorder)
-                            setupWorldBorder(50, 60*2, true, true);
-                    }
-                    else if(episode == 8 && minutesLeft == 8)
-                    {
-                        GameUtils.broadcastMessage(Messages.reducted.replace("${COORDS}", "-25 25"));
-                    }
-                    else if(episode == 8 && minutesLeft == 1)
-                    {
-                        EndTimer endTimer = new EndTimer(instance);
-                        endTimer.start();
-                    }
+            this.secondsLeft--;
+
+            if (this.secondsLeft == -1) {
+                this.minutesLeft--;
+                this.secondsLeft = 59;
+
+                if (this.episode == 8 && this.minutesLeft == 10) {
+                    if (this.animatedBorders)
+                        this.setupWorldBorder(50, 60 * 2, true, true);
+                } else if (episode == 8 && minutesLeft == 8) {
+                    Bukkit.broadcastMessage(Messages.reduced.toString().replace("${COORDS}", "-25 25"));
+                } else if (episode == 8 && minutesLeft == 1) {
+                    EndTimer endTimer = new EndTimer(this);
+                    endTimer.start();
                 }
-                
-                if(minutesLeft == -1)
-                {
-                    minutesLeft = 20;
-                    secondsLeft = 0;
-                    GameUtils.broadcastMessage(ChatColor.AQUA + "-------- Fin jour " + episode + " --------");
-                    easterEggManager.nextEpisode();
-                    episode++;
-                    
-                    if(episode == 2)
-                    {
-                        firstMinute = true;
-                        GameUtils.broadcastMessage(Messages.pvpActivated);
-                    }
-                    else if(episode == 4)
-                    {
-                        if(animatedBorder)
-                            setupWorldBorder(200, 60*60, true, true);
-                    }
-                    else if(episode == 7)
-                    {
-                        GameUtils.broadcastMessage(Messages.reducted.replace("${COORDS}", "-100 100"));
-                    }
-                    else if(episode == 8)
-                    {
-                        GameUtils.broadcastMessage(Messages.endOfGameAt);
-                    }
+            }
+
+            if (this.minutesLeft == -1) {
+                this.minutesLeft = 20;
+                this.secondsLeft = 0;
+
+                Bukkit.broadcastMessage(ChatColor.AQUA + "-------- Fin jour " + this.episode + " --------");
+
+                this.easterEggManager.nextEpisode();
+                this.episode++;
+
+                if (this.episode == 2) {
+                    this.firstTenMinutes = true;
+                    Bukkit.broadcastMessage(Messages.pvpActivated.toString());
+                } else if (episode == 4) {
+                    if (this.animatedBorders)
+                        this.setupWorldBorder(200, 60 * 60, true, true);
+                } else if (episode == 7) {
+                    Bukkit.broadcastMessage(Messages.reduced.toString().replace("${COORDS}", "-100 100"));
+                } else if (episode == 8) {
+                    Bukkit.broadcastMessage(Messages.endOfGameAt.toString());
                 }
-            } 
+            }
         }, 20L, 20L);
                 
         if(this.arenaType == ArenaType.TEAM)
-            GameUtils.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[CONSEIL] Seulement vos alliés verront vos messages. Pour parler publiquement, précédez votre message de '/all'");
+            Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[CONSEIL] Seulement vos alliés verront vos messages. Pour parler publiquement, précédez votre message de '/all'");
     }
     
     public void startGameCallback()
     {
         Bukkit.getScheduler().cancelTask(this.firstsTimer);
+    }
+
+    @Override
+    public void handleLogin(Player player, boolean reconnect)
+    {
+        super.handleLogin(player, reconnect);
+
+        player.teleport(new Location(this.world, 0.5D, 162, 0.5D));
+
+        this.objective.addReceiver(player);
+        this.setupPlayer(player);
+
+        if(this.arenaType == ArenaType.TEAM)
+            player.getInventory().setItem(0, this.getSelectTeamItem());
+
+        player.getInventory().setItem(8, this.coherenceMachine.getLeaveItem());
+        player.setScoreboard(this.board);
+
+        if(this.arenaType == ArenaType.TEAM)
+            player.sendMessage(Messages.warningTeam.toString());
+
+        this.gameManager.refreshArena();
+    }
+
+    @Override
+    public void handleLogout(Player player)
+    {
+        super.handleLogout(player);
+
+        this.objective.removeReceiver(Bukkit.getOfflinePlayer(player.getUniqueId()));
+    }
+
+    @Override
+    public void handleReconnect(Player player)
+    {
+        super.handleReconnect(player);
+
+        player.setScoreboard(this.board);
+        player.setGameMode(GameMode.SURVIVAL);
+        this.objective.addReceiver(player);
+    }
+
+    @Override
+    public void handleReconnectTimeOut(Player player)
+    {
+        super.handleReconnectTimeOut(player);
+
+        if(this.disconnectLocation.containsKey(player.getUniqueId()) && this.disconnectInventory.containsKey(player.getUniqueId()))
+        {
+            for(ItemStack stack : this.disconnectInventory.get(player.getUniqueId()).getContents())
+            {
+                if(stack != null && stack.getType() != Material.AIR)
+                    this.world.dropItemNaturally(this.disconnectLocation.get(player.getUniqueId()), stack);
+            }
+
+            for(ItemStack stack : this.disconnectInventory.get(player.getUniqueId()).getArmorContents())
+            {
+                if(stack != null && stack.getType() != Material.AIR)
+                    this.world.dropItemNaturally(this.disconnectLocation.get(player.getUniqueId()), stack);
+            }
+        }
+    }
+
+    public void setupPlayer(Player player)
+    {
+        player.setGameMode(GameMode.ADVENTURE);
+        player.setHealth(20.0D);
+        player.setSaturation(20);
+        player.getInventory().clear();
+        player.setExp(0.0F);
+        player.setLevel(0);
+
+        for(PotionEffect pe : player.getActivePotionEffects())
+            player.removePotionEffect(pe.getType());
     }
     
     public void setupWorldBorder(double distance, int time, boolean warning, boolean title)
@@ -470,7 +397,7 @@ public class ArenaCommon implements GameArena
                 TitleAPI.sendTitle(player, 0, 100, 20, ChatColor.DARK_RED + "Attention !", ChatColor.RED + "La bordure de map se rapproche :)");
             }
             
-            GameUtils.broadcastMessage(Messages.reducting.replace("${COORDS}", "-" + distance + " " + distance));
+            Bukkit.broadcastMessage(Messages.reducing.toString().replace("${COORDS}", "-" + distance + " " + distance));
         }
         
         if(time == 0)
@@ -505,93 +432,49 @@ public class ArenaCommon implements GameArena
         }
     }
     
-    public void endGame()
-    {
-        this.status = Status.Stopping;
-        GameAPI.getManager().refreshArena(this);
-        
-        for(ArenaPlayer player : this.arenaPlayers)
-        {
-            GameAPI.kickPlayer(player.getPlayer().getPlayer());
-        }
-        
-        this.arenaPlayers.clear();
-        this.arenaSpectators.clear();
-        this.arenaTeams.clear();
-        this.playersCrash.clear();
-        this.playersCrashTimer.clear();
-        this.spawns.clear();
-    }
-    
     public void finishTeam(ArenaTeam team)
-    {         
+    {
         if(team != null)
         {
             StringBuilder players = new StringBuilder();
                                     
             for(UUID player : team.getPlayers())
             {
-                increaseStat(player, "wins", 1);
-                CoinsManager.creditJoueur(player, CoinsUtils.getWinCoins(this.episode), true, true, "Victoire");
-                StarsManager.creditJoueur(player, this.episode * 2, "Victoire");
+                ArenaPlayer arenaPlayer = this.getPlayer(player);
+
+                this.increaseStat(player, "wins", 1);
+                arenaPlayer.addCoins(CoinsUtils.getWinCoins(this.episode), "Victoire");
+                arenaPlayer.addStars(this.episode * 2, "Victoire");
                 
                 players.append(PlayerUtils.getColoredFormattedPlayerName(Bukkit.getPlayer(player))).append(ChatColor.GRAY).append(", ");
             }
-            
-            String commentary = players.substring(0, players.length() - 2);
-            new SpecifiedWinTemplate().execute("Equipe " + team.getChatColor() + team.getName(), commentary);
+
+            ArrayList<String> winTemplateLines = new ArrayList<>();
+            winTemplateLines.add(ChatUtils.getCenteredText(ChatColor.GREEN + "Gagnant" + ChatColor.GRAY + " - " + ChatColor.RESET + "Equipe " + team.getChatColor() + team.getName()));
+            winTemplateLines.add(players.substring(0, players.length() - 2));
+
+            this.coherenceMachine.getTemplateManager().getCustomWinTemplate().execute(winTemplateLines);
         }
         
         GameUtils.broadcastSound(Sound.WITHER_DEATH);
-                
-        Bukkit.getScheduler().runTaskLater(UHC.getPlugin(), new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                endGame();
-            }
-        }, 10*20L);
-        
-        Bukkit.getScheduler().runTaskLater(UHC.getPlugin(), new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                Bukkit.shutdown();
-            }
-        }, 12 * 20L);
+        this.handleGameEnd();
     }
     
     public void finishSolo(ArenaPlayer player)
     {         
         if(player != null)
         {
-            new PlayerWinTemplate().execute(player.getPlayer());
-            increaseStat(player.getPlayerID(), "wins", 1);
-            CoinsManager.creditJoueur(player.getPlayerID(), CoinsUtils.getWinCoins(this.episode), true, true, "Victoire");
-            StarsManager.creditJoueur(player.getPlayerID(), this.episode * 2, "Victoire");
+            ArenaPlayer arenaPlayer = this.getPlayer(player.getUUID());
+
+            this.increaseStat(player.getUUID(), "wins", 1);
+            arenaPlayer.addCoins(CoinsUtils.getWinCoins(this.episode), "Victoire");
+            arenaPlayer.addStars(this.episode * 2, "Victoire");
+
+            this.coherenceMachine.getTemplateManager().getPlayerWinTemplate().execute(player.getPlayerIfOnline());
         }
         
         GameUtils.broadcastSound(Sound.WITHER_DEATH);
-                
-        Bukkit.getScheduler().runTaskLater(UHC.getPlugin(), new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                endGame();
-            }
-        }, 10*20L);
-        
-        Bukkit.getScheduler().runTaskLater(UHC.getPlugin(), new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                Bukkit.shutdown();
-            }
-        }, 12 * 20L);
+        this.handleGameEnd();
     }
     
     public void updateScoreboard()
@@ -600,7 +483,7 @@ public class ArenaCommon implements GameArena
         
         this.objective.setLine(-1, ChatColor.GRAY + "Jour: " + ChatColor.WHITE + this.episode);
         this.objective.setLine(-2, ChatColor.WHITE + "");
-        this.objective.setLine(-3, ChatColor.GRAY + "Joueurs: " + ChatColor.WHITE + this.getActualPlayers());
+        this.objective.setLine(-3, ChatColor.GRAY + "Joueurs: " + ChatColor.WHITE + this.getInGamePlayers().size());
         
         if(this.arenaType == ArenaType.TEAM)
         {
@@ -617,77 +500,50 @@ public class ArenaCommon implements GameArena
         this.objective.updateLines();
     }
     
-    public void lose(UUID player, boolean quitted)
+    public void lose(UUID player)
     {
         GameUtils.broadcastSound(Sound.WITHER_SPAWN);
-        increaseStat(player, "deaths", 1);
+        this.increaseStat(player, "deaths", 1);
         
-        if(!quitted)
+        if(Bukkit.getPlayer(player) != null)
         {
-            if(Bukkit.getPlayer(player) != null)
+            Player playerQuited = Bukkit.getPlayer(player);
+
+            if(playerQuited.getKiller() != null)
             {
-                Player playerQuitted = Bukkit.getPlayer(player);
+                Player killer = playerQuited.getKiller();
 
-                if(playerQuitted.getKiller() != null)
+                if(!killer.getUniqueId().equals(playerQuited.getUniqueId()))
                 {
-                    Player killer = playerQuitted.getKiller();
-
-                    if(!killer.getUniqueId().equals(playerQuitted.getUniqueId()))
-                    {
-                        increaseStat(killer.getUniqueId(), "kills", 1);
-                        CoinsManager.creditJoueur(killer.getUniqueId(), CoinsUtils.getKillCoins(this.episode), true, true, "Meurtre d'un joueur");
-                    }
+                    increaseStat(killer.getUniqueId(), "kills", 1);
+                    this.getPlayer(killer.getUniqueId()).addCoins(CoinsUtils.getKillCoins(this.episode), "Meurtre d'un joueur");
                 }
             }
         }
-        else
-        {
-            if(Bukkit.getPlayer(player) != null)
-            {
-                Player playerQuitted = Bukkit.getPlayer(player);
-                
-                for(ItemStack stack : playerQuitted.getInventory().getContents())
-                {
-                    if(stack != null && stack.getType() != Material.AIR)
-                        playerQuitted.getWorld().dropItem(playerQuitted.getLocation(), stack);
-                }
-                
-                for(ItemStack stack : playerQuitted.getInventory().getArmorContents())
-                {
-                    if(stack != null && stack.getType() != Material.AIR)
-                        playerQuitted.getWorld().dropItem(playerQuitted.getLocation(), stack);
-                }
-            }
-        }
+
+        this.getPlayer(player).setSpectator();
         
         if(this.arenaType == ArenaType.TEAM)
         {
             this.getPlayer(player).getTeam().lose(this.getPlayer(player));
                 
-            if(this.getActualPlayers() == this.getPlayer(player).getTeam().getPlayers().size())
+            if(this.getInGamePlayers().size() == this.getPlayer(player).getTeam().getPlayers().size())
             {
                 this.finishTeam(this.getPlayer(player).getTeam());
             }
-            
-            this.arenaPlayers.remove(this.getPlayer(player));
         }
         else
         {
-            this.arenaPlayers.remove(this.getPlayer(player));
-            
-            if(this.getActualPlayers() == 1)
+            if(this.getInGamePlayers().size() == 1)
             {
-                this.finishSolo(this.arenaPlayers.get(0));
+                this.finishSolo(this.gamePlayers.values().iterator().next());
             }
         }
-        
-        if(!quitted)
-            this.arenaSpectators.add(player);
     }
     
     public void loseTeam(ArenaTeam team)
     {
-        GameUtils.broadcastMessage(Messages.teamEliminated.replace("${TEAM}", team.getChatColor() + team.getName() + ChatColor.RESET));
+        GameUtils.broadcastMessage(Messages.teamEliminated.toString().replace("${TEAM}", team.getChatColor() + team.getName() + ChatColor.RESET));
         this.arenaTeams.remove(team);
         
         if(this.arenaTeams.size() == 1)
@@ -704,99 +560,8 @@ public class ArenaCommon implements GameArena
     
     public void loseHider(Player player)
     {
-        for(ArenaPlayer aPlayer : this.arenaPlayers)
-        {
-            aPlayer.getPlayer().getPlayer().hidePlayer(player);
-        }
-    }
-    
-    public void playerDisconnect(final UUID uuid)
-    {
-        GameAPI.addRejoinList(uuid, 180);
-        GameUtils.broadcastMessage(Messages.disconnected.replace("${PLAYER}", Bukkit.getOfflinePlayer(uuid).getName()));
-        this.objective.removeReceiver(Bukkit.getOfflinePlayer(uuid));
-        
-        if(this.playersCrashLocation.containsKey(uuid))
-            this.playersCrashLocation.remove(uuid);
-        
-        if(this.playersCrashInventory.containsKey(uuid))
-            this.playersCrashInventory.remove(uuid);
-        
-        if(Bukkit.getPlayer(uuid) != null)
-        {
-            this.playersCrashLocation.put(uuid, Bukkit.getPlayer(uuid).getLocation());
-            this.playersCrashInventory.put(uuid, Bukkit.getPlayer(uuid).getInventory());
-        }
-        
-        this.playersCrashTimer.put(uuid, Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), new Runnable()
-        {
-            int before = 0;
-            int now = 0;
-            boolean bool = false;
-            
-            @Override
-            public void run()
-            {
-                if(!bool)
-                {
-                    if(playersCrash.containsKey(uuid))
-                        before = playersCrash.get(uuid);
-                    
-                    bool = true;
-                }
-                
-                if(before == 300)
-                {
-                    GameAPI.removeRejoinList(uuid);
-                    lose(uuid, true);
-                    playerReconnected(uuid, true);
-                }
-                
-                if(now == 180)
-                {
-                    GameAPI.removeRejoinList(uuid);
-                    lose(uuid, true);
-                    playerReconnected(uuid, true);
-                }
-                
-                before++;
-                now++;
-                playersCrash.put(uuid, before);
-            }
-        }, 20L, 20L));
-    }
-    
-    public void playerReconnected(UUID uuid, boolean outoftime)
-    {
-        if(this.playersCrashTimer.containsKey(uuid))
-            Bukkit.getScheduler().cancelTask(this.playersCrashTimer.get(uuid));
-        
-        if(outoftime)
-        {
-            GameUtils.broadcastMessage(Messages.timeOut.replace("${PLAYER}", Bukkit.getOfflinePlayer(uuid).getName()));
-            
-            if(this.playersCrashLocation.containsKey(uuid) && this.playersCrashInventory.containsKey(uuid))
-            {
-                for(ItemStack stack : this.playersCrashInventory.get(uuid).getContents())
-                {
-                    if(stack != null && stack.getType() != Material.AIR)
-                        this.world.dropItemNaturally(this.playersCrashLocation.get(uuid), stack);
-                }
-                
-                for(ItemStack stack : this.playersCrashInventory.get(uuid).getArmorContents())
-                {
-                    if(stack != null && stack.getType() != Material.AIR)
-                        this.world.dropItemNaturally(this.playersCrashLocation.get(uuid), stack);
-                }
-            }
-            
-            return;
-        }
-        
-        GameUtils.broadcastMessage(Messages.reconnected.replace("${PLAYER}", Bukkit.getPlayer(uuid).getName()));
-        Bukkit.getPlayer(uuid).setScoreboard(this.board);
-        Bukkit.getPlayer(uuid).setGameMode(GameMode.SURVIVAL);
-        this.objective.addReceiver(Bukkit.getPlayer(uuid));
+        for(ArenaPlayer aPlayer : this.gamePlayers.values())
+            aPlayer.getPlayerIfOnline().hidePlayer(player);
     }
     
     public void createTeam(ArenaTeam team)
@@ -814,93 +579,15 @@ public class ArenaCommon implements GameArena
                 this.arenaTeams.remove(team);
         }
     }
-    
-    public void removePlayer(ArenaPlayer player)
-    {
-        if(this.arenaPlayers.contains(player))
-        {
-            if(this.getPlayer(player.getPlayerID()).hasTeam())
-                this.getPlayer(player.getPlayerID()).getTeam().leave(player);
-            
-            this.arenaPlayers.remove(player);
-        }
-        
-        GameUtils.broadcastMessage(Messages.playerQuitted.replace("${PLAYER}", player.getPlayer().getName()));
-    }
-    
-    public void increaseStat(UUID uuid, String statName, int count)
-    {
-        StatsApi.increaseStat(uuid, "uhc_" + (this.arenaType == ArenaType.TEAM ? "team" : "solo"), statName, count);
-    }
 
-    @Override
-    public void setStatus(Status status)
-    {
-        this.status = status;
-    }
-    
     public ArenaType getArenaType()
     {
         return this.arenaType;
     }
-    
-    public String getMapName()
-    {
-        return this.mapName;
-    }
-    
-    public World getWorld()
-    {
-        return this.world;
-    }
 
-    public ArenaPlayer getPlayer(UUID uuid)
-    {
-        for(ArenaPlayer aPlayer : this.arenaPlayers)
-        {            
-            if(aPlayer.getPlayerID().equals(uuid))
-                return aPlayer;
-        }
-        
-        return null;
-    }
-    
-    public int getActualPlayers()
-    {
-        return this.arenaPlayers.size();
-    }
-    
-    public ArrayList<ArenaPlayer> getArenaPlayers()
-    {
-        return this.arenaPlayers;
-    }
-    
     public ArrayList<ArenaTeam> getTeamAlive()
     {
         return this.arenaTeams;
-    }
-    
-    public int getMinPlayers()
-    {
-        return this.minPlayers;
-    }
-    
-    @Override
-    public int getMaxPlayers()
-    {
-        return this.maxPlayers - (this.arenaType == ArenaType.TEAM ? this.maxPlayersInTeam : 4);
-    }
-    
-    @Override
-    public int getTotalMaxPlayers()
-    {
-        return this.maxPlayers;
-    }
-
-    @Override
-    public Status getStatus()
-    {
-        return this.status;
     }
 
     public ShapelessRecipe getMelonRecipe()
@@ -933,31 +620,12 @@ public class ArenaCommon implements GameArena
         
         return null;
     }
-    
-    @Override
-    public int getVIPSlots()
-    {
-        return this.maxPlayersInTeam;
-    }
-    
+
     public int getMaxPlayersInTeam()
     {
         return this.maxPlayersInTeam;
     }
-    
-    public int getPlayerCrashTimerId(UUID uuid)
-    {
-        if(this.playersCrashTimer.containsKey(uuid))
-            return this.playersCrashTimer.get(uuid);
-        else
-            return 0;
-    }
-    
-    public ArrayList<UUID> getSpectators()
-    {
-        return this.arenaSpectators;
-    }
-    
+
     public ItemStack getSelectTeamItem()
     {
         ItemStack stack = new ItemStack(Material.NETHER_STAR);
@@ -972,12 +640,7 @@ public class ArenaCommon implements GameArena
     {
         return this.board;
     }
-    
-    public CoherenceMachine getCoherenceMachine()
-    {
-        return this.machine;
-    }
-    
+
     public EasterEggManager getEasterEggManager()
     {
         return this.easterEggManager;
@@ -987,53 +650,20 @@ public class ArenaCommon implements GameArena
     {
         return this.objective;
     }
-    
-    public WorldBorder getWorldBorder()
-    {
-        return this.worldBorder;
-    }
-    
-    @Override
-    public int countGamePlayers()
-    {
-        return this.getActualPlayers();
-    }
-    
-    @Override
-    public boolean hasPlayer(UUID uuid)
-    {
-        for(ArenaPlayer player : this.arenaPlayers)
-        {
-            if(player.getPlayerID().equals(uuid))
-                return true;
-        }
-        
-        return false;
-    }
-    
-    public boolean canJoin()
-    {
-        return ((status.equals(Status.Available) || status.equals(Status.Starting)) && this.arenaPlayers.size() < this.maxPlayers);
-    }
-    
+
     public boolean isGameStarted()
     {
-        return (this.status == Status.InGame);
+        return (this.status == Status.IN_GAME);
     }
-    
-    public boolean isSpectator(UUID uuid)
-    {
-        return this.arenaSpectators.contains(uuid);
-    }
-    
-    public boolean isFirst30Seconds()
-    {
-        return this.first30seconds;
-    }
-    
+
     public boolean isFirstMinute()
     {
         return this.firstMinute;
+    }
+    
+    public boolean isFirstTenMinutes()
+    {
+        return this.firstTenMinutes;
     }
     
     public boolean isAdminTeamExist()

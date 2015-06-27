@@ -1,14 +1,15 @@
 package fr.blueslime.uhc.arena;
 
 import fr.blueslime.uhc.UHC;
-import fr.blueslime.uhc.utils.ParticleEffect;
-import java.util.ArrayList;
-import java.util.UUID;
+import net.samagames.tools.ParticleEffect;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.ArrayList;
+import java.util.UUID;
 
 public class EasterEggManager
 {
@@ -42,14 +43,7 @@ public class EasterEggManager
     
     public void start()
     {        
-        this.loopID = Bukkit.getScheduler().scheduleAsyncRepeatingTask(UHC.getPlugin(), new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                update();
-            }
-        }, 0, 1);
+        this.loopID = Bukkit.getScheduler().scheduleAsyncRepeatingTask(UHC.getPlugin(), this::update, 0, 1);
     }
     
     public void kill()
@@ -109,10 +103,10 @@ public class EasterEggManager
             cookieMeta.setDisplayName(ChatColor.GOLD + "Le cookie de Maïté");
             cookie.setItemMeta(cookieMeta);
 
-            for(ArenaPlayer player : UHC.getPlugin().getArena().getArenaPlayers())
+            for(ArenaPlayer player : UHC.getPlugin().getArena().getInGamePlayers().values())
             {
-                player.getPlayer().getInventory().addItem(cookie);
-                player.getPlayer().sendMessage(this.maiteTag + ChatColor.YELLOW + "Sur la qualité, on ne me la fait pas. Goute moi ça !");
+                player.getPlayerIfOnline().getInventory().addItem(cookie);
+                player.getPlayerIfOnline().sendMessage(this.maiteTag + ChatColor.YELLOW + "Sur la qualité, on ne me la fait pas. Goute moi ça !");
             }
         }
     }

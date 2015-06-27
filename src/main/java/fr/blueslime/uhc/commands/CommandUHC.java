@@ -16,10 +16,6 @@ public class CommandUHC implements CommandExecutor
                 case "help":
                     CommandHelp.onCommand(cs, cmnd, string, strings);
                     break;
-
-                case "start":
-                    CommandStart.onCommand(cs, cmnd, string, strings);
-                    break;
                     
                 case "adminteam":
                     CommandAdminTeam.onCommand(cs, cmnd, string, strings);

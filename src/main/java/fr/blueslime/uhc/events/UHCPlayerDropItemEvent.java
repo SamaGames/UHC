@@ -21,7 +21,7 @@ public class UHCPlayerDropItemEvent implements Listener
         }
         else
         {            
-            if(!arena.hasPlayer(player.getUniqueId()))
+            if(!arena.hasPlayer(player))
             {
                 event.setCancelled(true);
             }

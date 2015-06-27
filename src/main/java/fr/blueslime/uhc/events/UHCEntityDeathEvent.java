@@ -1,7 +1,5 @@
 package fr.blueslime.uhc.events;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.entity.Ghast;
 import org.bukkit.event.EventHandler;
@@ -9,10 +7,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UHCEntityDeathEvent implements Listener
 {
     @EventHandler
-    public void onEntityDeath(EntityDeathEvent event)
+    public void event(EntityDeathEvent event)
     {
         if (event.getEntity() instanceof Ghast)
         {

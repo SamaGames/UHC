@@ -2,7 +2,7 @@ package fr.blueslime.uhc.events;
 
 import fr.blueslime.uhc.UHC;
 import fr.blueslime.uhc.gui.GuiSelectTeam;
-import net.samagames.gameapi.GameAPI;
+import net.samagames.api.SamaGamesAPI;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,7 +14,7 @@ public class UHCPlayerInteractEvent implements Listener
     @EventHandler
     public void event(PlayerInteractEvent event)
     {
-        if(!UHC.getPlugin().getArena().hasPlayer(event.getPlayer().getUniqueId()) || !UHC.getPlugin().getArena().isGameStarted())
+        if(!UHC.getPlugin().getArena().hasPlayer(event.getPlayer()) || !UHC.getPlugin().getArena().isGameStarted())
         {
             event.setCancelled(true);
         }
@@ -23,24 +23,21 @@ public class UHCPlayerInteractEvent implements Listener
         {      
             if(event.getItem() != null)
             {
+                if(event.getItem().getType() == Material.WOOD_DOOR)
+                    SamaGamesAPI.get().getGameManager().kickPlayer(event.getPlayer(), null);
+
                 if(!UHC.getPlugin().getArena().isGameStarted())
                 {         
                     event.setCancelled(true);
-                    
-                    if(event.getItem().getType() == Material.WOOD_DOOR)
-                        GameAPI.kickPlayer(event.getPlayer());
-                    
-                    else if(event.getItem().getType() == Material.NETHER_STAR)
+
+                    if(event.getItem().getType() == Material.NETHER_STAR)
                         UHC.getPlugin().openGui(event.getPlayer(), new GuiSelectTeam());
                 }
                 else
                 {
-                    if(!UHC.getPlugin().getArena().hasPlayer(event.getPlayer().getUniqueId()))
+                    if(!UHC.getPlugin().getArena().hasPlayer(event.getPlayer()))
                     {
                         event.setCancelled(true);
-
-                        if(event.getItem().getType() == Material.WOOD_DOOR)
-                            GameAPI.kickPlayer(event.getPlayer());
                     }
                 }
             }

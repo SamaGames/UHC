@@ -1,8 +1,7 @@
 package fr.blueslime.uhc.arena;
 
 import fr.blueslime.uhc.UHC;
-import net.samagames.gameapi.GameAPI;
-import net.samagames.gameapi.types.GameArena;
+import net.samagames.core.api.games.Game;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitTask;
@@ -18,7 +17,7 @@ public class WorldGenerator
         this.numberChunk = 0;
     }
     
-    public void begin(final GameArena arena, final World world)
+    public void begin(final Game arena, final World world)
     {
         this.task = Bukkit.getScheduler().runTaskTimer(UHC.getPlugin(), new Runnable()
         {
@@ -38,7 +37,6 @@ public class WorldGenerator
                     {
                         lastShow = System.currentTimeMillis();
                         Bukkit.getLogger().info("[UHC] Generating map... (" + (numberChunk * 100 / 15625) + "% finished)");
-                        GameAPI.getManager().sendArena(GameAPI.getManager().buildJson(arena, (numberChunk * 100 / 15625)));
                     }
                     
                     z+=16;

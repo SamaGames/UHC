@@ -1,6 +1,7 @@
 package fr.blueslime.uhc.events;
 
 import fr.blueslime.uhc.UHC;
+import net.samagames.tools.AbstractGui;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,9 +24,15 @@ public class UHCInventoryClickEvent implements Listener
             
             if(event.getCurrentItem() != null && event.getCurrentItem().getItemMeta() != null)
             {
-                if(UHC.getPlugin().getPlayerGui(player.getUniqueId()) != null)
+                AbstractGui gui = UHC.getPlugin().getPlayerGui(player.getUniqueId());
+
+                if (gui != null)
                 {
-                    UHC.getPlugin().getPlayerGui(player.getUniqueId()).onClic(player, event.getCurrentItem());
+                    String action = gui.getAction(event.getSlot());
+
+                    if (action != null)
+                        gui.onClick(player, event.getCurrentItem(), action, event.getClick());
+
                     event.setCancelled(true);
                 }
             }

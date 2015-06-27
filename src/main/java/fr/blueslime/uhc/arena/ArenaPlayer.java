@@ -1,22 +1,23 @@
 package fr.blueslime.uhc.arena;
 
-import java.util.UUID;
+import net.samagames.core.api.games.GamePlayer;
 import org.bukkit.entity.Player;
 
-public class ArenaPlayer
+public class ArenaPlayer extends GamePlayer
 {
-    private final Player player;
-    private final UUID playerId;
-    
     private ArenaTeam team;
     
     public ArenaPlayer(Player player)
     {
-        this.player = player;
-        this.playerId = player.getUniqueId();
+        super(player);
         this.team = null;
-        
-        player.getInventory().clear();
+    }
+
+    @Override
+    public void handleLogin(boolean reconnect)
+    {
+        if(!reconnect)
+            this.getPlayerIfOnline().getInventory().clear();
     }
     
     public void setTeam(ArenaTeam team)
@@ -24,16 +25,6 @@ public class ArenaPlayer
         this.team = team;
     }
 
-    public Player getPlayer()
-    {
-        return this.player;
-    }
-    
-    public UUID getPlayerID()
-    {
-        return this.playerId;
-    }
-    
     public ArenaTeam getTeam()
     {
         return this.team;

@@ -1,6 +1,5 @@
 package fr.blueslime.uhc.events;
 
-import fr.blueslime.uhc.events.*;
 import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
 import fr.blueslime.uhc.arena.ArenaCommon.ArenaType;
@@ -32,18 +31,18 @@ public class UHCSignChangeEvent implements Listener
                         StringUtils.containsIgnoreCase("Maïte", event.getLine(0))
                     )
                     {
-                        event.getPlayer().sendMessage(Messages.dontTouchHer);
+                        event.getPlayer().sendMessage(Messages.dontTouchHer.toString());
                     }
                     else
                     {
-                        player.getTeam().changeName(player.getPlayerID(), event.getLine(0));
-                        event.getPlayer().sendMessage(Messages.teamNameChanged.replace("${NAME}", event.getLine(0)));
+                        player.getTeam().changeName(player.getUUID(), event.getLine(0));
+                        event.getPlayer().sendMessage(Messages.teamNameChanged.toString().replace("${NAME}", event.getLine(0)));
                         UHC.getPlugin().openGui(event.getPlayer(), new GuiSelectTeam());
                     }
                 }
                 else
                 {
-                    event.getPlayer().sendMessage(Messages.lineEmpty);
+                    event.getPlayer().sendMessage(Messages.lineEmpty.toString());
                 }
             }
         }

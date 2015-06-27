@@ -17,7 +17,7 @@ public class UHCPlayerPickupItemEvent implements Listener
         Player player = event.getPlayer();
         ArenaCommon arena = UHC.getPlugin().getArena();
         
-        if(arena.hasPlayer(player.getUniqueId()))
+        if(arena.hasPlayer(player))
         {
             event.setCancelled(false);
         }

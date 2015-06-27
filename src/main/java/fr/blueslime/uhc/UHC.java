@@ -3,14 +3,13 @@ package fr.blueslime.uhc;
 import fr.blueslime.uhc.arena.ArenaCommon;
 import fr.blueslime.uhc.arena.SpawnBlock;
 import fr.blueslime.uhc.commands.CommandAll;
-import fr.blueslime.uhc.commands.CommandCloseIfEmpty;
-import fr.blueslime.uhc.commands.CommandInv;
 import fr.blueslime.uhc.commands.CommandUHC;
 import fr.blueslime.uhc.events.*;
-import fr.blueslime.uhc.gui.Gui;
 import net.minecraft.server.v1_8_R2.*;
-import net.samagames.gameapi.GameAPI;
-import net.samagames.gameapi.json.Status;
+import net.samagames.api.SamaGamesAPI;
+import net.samagames.api.games.IGameProperties;
+import net.samagames.api.games.Status;
+import net.samagames.tools.AbstractGui;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,13 +24,9 @@ import java.util.UUID;
 public class UHC extends JavaPlugin
 {
     private static UHC plugin;
-    private HashMap<UUID, Gui> playersGui;
+    private HashMap<UUID, AbstractGui> playersGui;
     private ArenaCommon arena;
-    private String bungeeName;
-    private int comPort;
     private int startTimer;
-    private boolean team;
-    private boolean staffMode;
     private SpawnBlock spawnBlock;
 
     @Override
@@ -44,28 +39,17 @@ public class UHC extends JavaPlugin
         
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         this.patchBiomes();
-        
-        this.saveDefaultConfig();
-        this.team = getConfig().getBoolean("team-mode", true);
-                
+
         this.saveResource("lobby.schematic", false);
         this.getCommand("uhc").setExecutor(new CommandUHC());
-        this.getCommand("inv").setExecutor(new CommandInv());
         this.getCommand("all").setExecutor(new CommandAll());
-        this.getCommand("closeifempty").setExecutor(new CommandCloseIfEmpty());
 
         this.registerEvents();
                 
-        this.startTimer = Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), new Runnable()
-        {            
-            @Override
-            public void run()
-            {
-                if(Bukkit.getPluginManager().isPluginEnabled("MasterBundle"))
-                {
-                    finishInit();
-                }
-            } 
+        this.startTimer = Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), () ->
+        {
+            if(Bukkit.getPluginManager().isPluginEnabled("SamaGamesAPI"))
+                finishInit();
         }, 20L, 20L);
     }
     
@@ -75,49 +59,43 @@ public class UHC extends JavaPlugin
                 
         this.spawnBlock = new SpawnBlock(this);
         this.spawnBlock.generate();
-        
-        this.comPort = getConfig().getInt("com-port");
-        this.bungeeName = getConfig().getString("BungeeName");
-        int maxPlayersInTeam = getConfig().getInt("max-players-in-team", 3);
-        int teamNumber = getConfig().getInt("teams", 8);
-        boolean animatedBorder = getConfig().getBoolean("animated-border", true);
-        this.staffMode = getConfig().getBoolean("staff-mode", false);
-        
+
+        IGameProperties properties = SamaGamesAPI.get().getGameManager().getGameProperties();
+
+        boolean animatedBorders = Boolean.valueOf(properties.getOption("animated-borders"));
+        boolean teamMode = Boolean.valueOf(properties.getOption("team-mode"));
+        int maxPlayersInTeam = Integer.valueOf(properties.getOption("max-players-in-team"));
+        int teamNumber = Integer.valueOf(properties.getOption("teams"));
+
         if(teamNumber > 12)
         {
             Bukkit.getLogger().severe("[UHC] Team number > 12 ! Setting 8 teams.");
             teamNumber = 8;
         }
 
-        if(this.team)
-            this.arena = new ArenaCommon(Bukkit.getWorld("world"), maxPlayersInTeam, teamNumber, animatedBorder);
+        if(teamMode)
+            this.arena = new ArenaCommon(Bukkit.getWorld("world"), maxPlayersInTeam, teamNumber, animatedBorders);
         else
-            this.arena = new ArenaCommon(Bukkit.getWorld("world"), 0, 0, animatedBorder);
-        
-        GameAPI.registerArena(this.arena);
-        GameAPI.registerGame((this.staffMode ? "staffbeta" : (this.team ? "uhc_team" : "uhc_solo")), comPort, bungeeName);
-        GameAPI.getManager().sendSync();
-        
+            this.arena = new ArenaCommon(Bukkit.getWorld("world"), 0, 0, animatedBorders);
+
+        this.arena.setStatus(Status.STARTING);
+        SamaGamesAPI.get().getGameManager().registerGame(this.arena);
+        SamaGamesAPI.get().getGameManager().setMaxReconnectTime(5);
+
         Bukkit.addRecipe(this.arena.getMelonRecipe());
     }
     
     public void finishGeneration()
     {
-        this.arena.setStatus(Status.Available);
+        this.arena.setStatus(Status.WAITING_FOR_PLAYERS);
         this.arena.getEasterEggManager().start();
-        GameAPI.getManager().sendSync();
     }
 
     @Override
     public void onDisable()
     {
         if(this.arena != null)
-        {
-            this.arena.setStatus(Status.Stopping);
-        }
-        
-        GameAPI.getManager().sendSync();
-        GameAPI.getManager().disable();
+            this.arena.setStatus(Status.REBOOTING);
     }
     
     public void registerEvents()
@@ -132,21 +110,16 @@ public class UHC extends JavaPlugin
         Bukkit.getPluginManager().registerEvents(new UHCEntityDeathEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCEntityRegainHealthEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCEntityTargetEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCFinishJoinPlayerEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCFoodLevelChangeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCInventoryClickEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCInventoryCloseEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCJoinModEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerDeathEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerDropItemEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerInteractEntityEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerInteractEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerPickupItemEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCPlayerPreJoinEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCPlayerQuitEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerRespawnEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPotionSplashEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCRejoinPlayerEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCSignChangeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCBlockFromToEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerBucketEmptyEvent(), this);
@@ -254,7 +227,7 @@ public class UHC extends JavaPlugin
         field.set(null, obj);
     }
     
-    public void openGui(Player player, Gui gui)
+    public void openGui(Player player, AbstractGui gui)
     {
         if(this.playersGui.containsKey(player.getUniqueId()))
         {
@@ -287,18 +260,8 @@ public class UHC extends JavaPlugin
     {
         return this.arena;
     }
-
-    public int getComPort()
-    {
-        return this.comPort;
-    }
     
-    public String getBungeeName()
-    {
-        return this.bungeeName;
-    }
-    
-    public Gui getPlayerGui(UUID uuid)
+    public AbstractGui getPlayerGui(UUID uuid)
     {
         if(this.playersGui.containsKey(uuid))
         {
@@ -313,16 +276,6 @@ public class UHC extends JavaPlugin
     public SpawnBlock getSpawnBlock()
     {
         return this.spawnBlock;
-    }
-    
-    public boolean isTeamMode()
-    {
-        return this.team;
-    }
-    
-    public boolean isStaffMode()
-    {
-        return this.staffMode;
     }
     
     public static UHC getPlugin()

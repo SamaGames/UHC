@@ -14,7 +14,7 @@ public class UHCBlockBreakEvent implements Listener
         {
             event.setCancelled(true);
         }
-        else if(!UHC.getPlugin().getArena().hasPlayer(event.getPlayer().getUniqueId()))
+        else if(!UHC.getPlugin().getArena().hasPlayer(event.getPlayer()))
         {
             event.setCancelled(true);
         }

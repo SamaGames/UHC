@@ -1,15 +1,16 @@
 package fr.blueslime.uhc.arena;
 
 import fr.blueslime.uhc.UHC;
-import java.util.ArrayList;
-import java.util.UUID;
-import net.samagames.utils.FancyMessage;
+import net.samagames.tools.chat.FancyMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
+
+import java.util.ArrayList;
+import java.util.UUID;
 
 public class ArenaTeam
 {
@@ -61,23 +62,23 @@ public class ArenaTeam
     
     public void join(ArenaPlayer player)
     {
-        this.players.add(player.getPlayerID());
-        this.team.addPlayer(player.getPlayer());
+        this.players.add(player.getUUID());
+        this.team.addPlayer(player.getPlayerIfOnline());
         player.setTeam(this);
     }
     
     public void invite(ArenaPlayer inviter, ArenaPlayer player)
     {
-        this.invited.add(player.getPlayerID());
+        this.invited.add(player.getUUID());
 
-        new FancyMessage("Vous avez été invité dans l'équipe " + this.name + " par " + inviter.getPlayer().getName() + " ")
-            .color(ChatColor.GOLD)
-            .style(ChatColor.BOLD)
-        .then("[Rejoindre]")
-            .color(ChatColor.GREEN)
-            .style(ChatColor.BOLD)
-            .command("/uhc join " + this.number + " " + player.getPlayer().getName())
-        .send(player.getPlayer());
+        new FancyMessage("Vous avez été invité dans l'équipe " + this.name + " par " + inviter.getPlayerIfOnline().getName() + " ")
+                .color(ChatColor.GOLD)
+                .style(ChatColor.BOLD)
+                .then("[Rejoindre]")
+                .color(ChatColor.GREEN)
+                .style(ChatColor.BOLD)
+                .command("/uhc join " + this.number + " " + player.getPlayerIfOnline().getName())
+                .send(player.getPlayerIfOnline());
     }
     
     public void removeInvite(UUID uuid)
@@ -88,11 +89,11 @@ public class ArenaTeam
     
     public void leave(ArenaPlayer player)
     {
-        this.players.remove(player.getPlayerID());
-        this.team.removePlayer(player.getPlayer());
+        this.players.remove(player.getUUID());
+        this.team.removePlayer(player.getPlayerIfOnline());
         player.setTeam(null);
         
-        if(player.getPlayerID().equals(this.nameChanger))
+        if(player.getUUID().equals(this.nameChanger))
             this.name = this.originName;
         
         if(this.isEmpty())
@@ -112,8 +113,8 @@ public class ArenaTeam
     
     public void lose(ArenaPlayer player)
     {
-        this.remove(player.getPlayerID());
-        this.team.removePlayer(player.getPlayer());
+        this.remove(player.getUUID());
+        this.team.removePlayer(player.getPlayerIfOnline());
         
         if(this.players.isEmpty())
         {
@@ -127,7 +128,7 @@ public class ArenaTeam
         {
             if(Bukkit.getPlayer(uuid) != null)
             {
-                Bukkit.getPlayer(uuid).sendMessage(this.color + "[Equipe] " + ChatColor.RESET + player.getPlayer().getName() + ": " + message);
+                Bukkit.getPlayer(uuid).sendMessage(this.color + "[Equipe] " + ChatColor.RESET + player.getPlayerIfOnline().getName() + ": " + message);
             }
         }
     }
