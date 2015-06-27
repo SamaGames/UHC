@@ -28,17 +28,13 @@ public class CommandJoin
 
                     if(!aPlayer.hasTeam())
                     {
-                        if(aTeam.isInvited(aPlayer.getPlayerID()))
+                        if(aTeam.isInvited(aPlayer.getUUID()))
                         {
                             aTeam.join(aPlayer);
-                            aPlayer.getPlayer().sendMessage(Messages.teamJoined.replace("${TEAM}", aTeam.getChatColor() + aTeam.getName()) + ChatColor.YELLOW);
+                            aPlayer.getPlayerIfOnline().sendMessage(Messages.teamJoined.toString().replace("${TEAM}", aTeam.getChatColor() + aTeam.getName()) + ChatColor.YELLOW);
                         }
                     }
                 }
-            }
-            else
-            {
-                cs.sendMessage(Messages.wrongGameType);
             }
         }
         

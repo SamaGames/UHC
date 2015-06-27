@@ -26,21 +26,17 @@ public class CommandInvite
 
                     if(aInviter.hasTeam() && !aInviter.getTeam().isFull())
                     {
-                        if(aInviter.getTeam().isInvited(aInvited.getPlayerID()))
-                            aInviter.getTeam().removeInvite(aInvited.getPlayerID());
+                        if(aInviter.getTeam().isInvited(aInvited.getUUID()))
+                            aInviter.getTeam().removeInvite(aInvited.getUUID());
 
                         aInviter.getTeam().invite(aInviter, aInvited);
-                        aInviter.getPlayer().sendMessage(Messages.inviteSuccessful);
+                        aInviter.getPlayerIfOnline().sendMessage(Messages.inviteSuccessful.toString());
                     }
                     else
                     {
-                        aInviter.getPlayer().sendMessage(Messages.teamFull);
+                        aInviter.getPlayerIfOnline().sendMessage(Messages.teamFull.toString());
                     }
                 }
-            }
-            else
-            {
-                cs.sendMessage(Messages.wrongGameType);
             }
         }
                 

@@ -1,6 +1,5 @@
 package fr.blueslime.uhc.commands;
 
-import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
 import fr.blueslime.uhc.arena.ArenaCommon.ArenaType;
 import fr.blueslime.uhc.arena.ArenaTeam;
@@ -45,14 +44,10 @@ public class CommandAdminTeam
                     return false;
                 }
             }
-            else
-            {
-                cs.sendMessage(Messages.wrongGameType);
-            }
         }
         else
         {
-            cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.RED + "Vous n'êtes pas le créateur du plugin :p");
+            cs.sendMessage(ChatColor.RED + "Vous n'êtes pas le créateur du plugin :p");
         }
 
         return true;
@@ -70,11 +65,11 @@ public class CommandAdminTeam
             name.append(ChatColor.DARK_BLUE).append("é");
             
             UHC.getPlugin().getArena().createTeam(new ArenaTeam(UHC.getPlugin().getArena(), 8, UHC.getPlugin().getArena().getMaxPlayersInTeam(), name.toString(), ChatColor.AQUA, new ItemStack(Material.COOKIE, 1), 0, 0));
-            cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.YELLOW + "L'équipe a été créée avec succès !");
+            cs.sendMessage(ChatColor.YELLOW + "L'équipe a été créée avec succès !");
         }
         else
         {
-            cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.RED + "L'équipe éxiste déjà !");
+            cs.sendMessage(ChatColor.RED + "L'équipe éxiste déjà !");
         }
     }
     
@@ -88,11 +83,11 @@ public class CommandAdminTeam
             }
             
             UHC.getPlugin().getArena().removeAdminTeam();
-            cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.YELLOW + "L'équipe a été supprimée avec succès !");
+            cs.sendMessage(ChatColor.YELLOW + "L'équipe a été supprimée avec succès !");
         }
         else
         {
-            cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.RED + "L'équipe n'éxiste pas !");
+            cs.sendMessage( ChatColor.RED + "L'équipe n'éxiste pas !");
         }
     }
     
@@ -109,21 +104,21 @@ public class CommandAdminTeam
                     
                     UHC.getPlugin().getArena().getAdminTeam().join(UHC.getPlugin().getArena().getPlayer(Bukkit.getPlayer(strings[2]).getUniqueId()));
                 
-                    cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.YELLOW + "Le joueur a été ajouté avec succès !");
+                    cs.sendMessage(ChatColor.YELLOW + "Le joueur a été ajouté avec succès !");
                 }
                 else
                 {
-                    cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.RED + "Le joueur spécifié n'est pas connecté !");
+                    cs.sendMessage(ChatColor.RED + "Le joueur spécifié n'est pas connecté !");
                 }
             }
             else
             {
-                cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.RED + "Veuillez préciser un nom de joueur !");
+                cs.sendMessage(ChatColor.RED + "Veuillez préciser un nom de joueur !");
             }
         }
         else
         {
-            cs.sendMessage(Messages.PLUGIN_TAG + ChatColor.RED + "L'équipe n'éxiste pas !");
+            cs.sendMessage(ChatColor.RED + "L'équipe n'éxiste pas !");
         }
     }
 }
