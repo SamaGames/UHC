@@ -21,8 +21,8 @@ public class WorldGenerator
     {
         this.task = Bukkit.getScheduler().runTaskTimer(UHC.getPlugin(), new Runnable()
         {
-            private int x = (UHC.getPlugin().isStaffMode() ? -200 : -1000);
-            private int z = (UHC.getPlugin().isStaffMode() ? -200 : -1000);
+            private int x = -1000;
+            private int z = -1000;
 
             @Override
             public void run()

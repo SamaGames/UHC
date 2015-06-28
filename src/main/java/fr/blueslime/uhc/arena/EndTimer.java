@@ -2,6 +2,7 @@ package fr.blueslime.uhc.arena;
 
 import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.arena.ArenaCommon.ArenaType;
+import net.samagames.api.SamaGamesAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -35,7 +36,7 @@ public class EndTimer extends Thread
                 this.formatTime();
                 this.setTimeout((int) time);
 
-                if (parent.getActualPlayers() < parent.getMinPlayers())
+                if (parent.getInGamePlayers().size() < SamaGamesAPI.get().getGameManager().getGameProperties().getMinSlots())
                 {
                     this.setTimeout(0);
                     this.end();
