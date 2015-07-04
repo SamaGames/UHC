@@ -1,13 +1,13 @@
 package fr.blueslime.uhc.arena;
 
-import com.connorlinfoot.titleapi.TitleAPI;
 import fr.blueslime.uhc.Messages;
 import fr.blueslime.uhc.UHC;
 import fr.blueslime.uhc.utils.CoinsUtils;
+import net.samagames.api.games.Game;
 import net.samagames.api.games.Status;
-import net.samagames.core.api.games.Game;
 import net.samagames.tools.GameUtils;
 import net.samagames.tools.PlayerUtils;
+import net.samagames.tools.Titles;
 import net.samagames.tools.chat.ChatUtils;
 import net.samagames.tools.scoreboards.ObjectiveSign;
 import org.bukkit.*;
@@ -394,7 +394,7 @@ public class ArenaCommon extends Game<ArenaPlayer>
             
             for(Player player : Bukkit.getOnlinePlayers())
             {
-                TitleAPI.sendTitle(player, 0, 100, 20, ChatColor.DARK_RED + "Attention !", ChatColor.RED + "La bordure de map se rapproche :)");
+                Titles.sendTitle(player, 0, 100, 20, ChatColor.DARK_RED + "Attention !", ChatColor.RED + "La bordure de map se rapproche :)");
             }
             
             Bukkit.broadcastMessage(Messages.reducing.toString().replace("${COORDS}", "-" + distance + " " + distance));

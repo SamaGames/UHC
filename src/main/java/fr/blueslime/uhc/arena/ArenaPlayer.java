@@ -1,6 +1,6 @@
 package fr.blueslime.uhc.arena;
 
-import net.samagames.core.api.games.GamePlayer;
+import net.samagames.api.games.GamePlayer;
 import org.bukkit.entity.Player;
 
 public class ArenaPlayer extends GamePlayer

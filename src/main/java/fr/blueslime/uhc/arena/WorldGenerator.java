@@ -1,7 +1,7 @@
 package fr.blueslime.uhc.arena;
 
 import fr.blueslime.uhc.UHC;
-import net.samagames.core.api.games.Game;
+import net.samagames.api.games.Game;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitTask;
