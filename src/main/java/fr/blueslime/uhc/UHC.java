@@ -27,7 +27,6 @@ public class UHC extends JavaPlugin
     private static UHC plugin;
     private HashMap<UUID, AbstractGui> playersGui;
     private ArenaCommon arena;
-    private int startTimer;
     private SpawnBlock spawnBlock;
 
     @Override
@@ -50,11 +49,6 @@ public class UHC extends JavaPlugin
     
     public void finishInit()
     {
-        Bukkit.getScheduler().cancelTask(this.startTimer);
-                
-        this.spawnBlock = new SpawnBlock(this);
-        this.spawnBlock.generate();
-
         IGameProperties properties = SamaGamesAPI.get().getGameManager().getGameProperties();
 
         boolean animatedBorders = properties.getOption("animated-borders", new JsonPrimitive(true)).getAsBoolean();
@@ -76,6 +70,9 @@ public class UHC extends JavaPlugin
         this.arena.setStatus(Status.STARTING);
         SamaGamesAPI.get().getGameManager().registerGame(this.arena);
         SamaGamesAPI.get().getGameManager().setMaxReconnectTime(5);
+
+        this.spawnBlock = new SpawnBlock(this);
+        this.spawnBlock.generate();
 
         Bukkit.addRecipe(this.arena.getMelonRecipe());
     }
