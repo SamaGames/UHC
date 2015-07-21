@@ -5,8 +5,8 @@ import fr.blueslime.uhc.UHC;
 import fr.blueslime.uhc.arena.ArenaCommon;
 import fr.blueslime.uhc.arena.ArenaPlayer;
 import fr.blueslime.uhc.arena.ArenaTeam;
-import net.minecraft.server.v1_8_R2.EntityHuman;
-import net.minecraft.server.v1_8_R2.TileEntitySign;
+import net.minecraft.server.v1_8_R3.EntityHuman;
+import net.minecraft.server.v1_8_R3.TileEntitySign;
 import net.samagames.api.SamaGamesAPI;
 import net.samagames.tools.AbstractGui;
 import net.samagames.tools.chat.FancyMessage;
@@ -15,8 +15,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
-import org.bukkit.craftbukkit.v1_8_R2.block.CraftSign;
-import org.bukkit.craftbukkit.v1_8_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_8_R3.block.CraftSign;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -50,7 +50,8 @@ public class GuiSelectTeam extends AbstractGui
             this.openSign = EntityHuman.class.getDeclaredMethod("openSign", new Class[]{TileEntitySign.class});
             this.setEditor = TileEntitySign.class.getDeclaredMethod("a", new Class[]{EntityHuman.class});
         }
-        catch (NoSuchFieldException | SecurityException | NoSuchMethodException ex) {
+        catch (NoSuchFieldException | SecurityException | NoSuchMethodException ex)
+        {
             ex.printStackTrace();
         }
 

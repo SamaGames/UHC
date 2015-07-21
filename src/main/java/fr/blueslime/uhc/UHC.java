@@ -6,7 +6,7 @@ import fr.blueslime.uhc.arena.SpawnBlock;
 import fr.blueslime.uhc.commands.CommandAll;
 import fr.blueslime.uhc.commands.CommandUHC;
 import fr.blueslime.uhc.events.*;
-import net.minecraft.server.v1_8_R2.*;
+import net.minecraft.server.v1_8_R3.*;
 import net.samagames.api.SamaGamesAPI;
 import net.samagames.api.games.IGameProperties;
 import net.samagames.api.games.Status;
