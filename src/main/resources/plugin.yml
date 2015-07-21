@@ -2,7 +2,7 @@ name: UHC
 main: fr.blueslime.uhc.UHC
 version: 1.0
 
-depend: [MasterBundle]
+depend: [SamaGamesAPI, WorldEdit]
 load: startup
 
 author: BlueSlime
@@ -17,24 +17,8 @@ commands:
     all:
         description: Chat
         usage: /all <Message>
-    inv:
-        description: Voir l'inventaire d'un joueur
-        usage: /inv <Joueur>
-        permission: UHC.inv
-        permission-message: Permission non accordée
-    closeifempty:
-        description: Commande utilitaire
-        usage: /closeifempty
-        permission: UHC.closeifempty
-        permission-message: Permission non accordée
 
 permissions:
     UHC.op:
         description: Commandes OP UHC
-        default: op
-    UHC.inv:
-        description: Commandes Inv UHC
-        default: op
-    UHC.closeifempty:
-        description: Commande utilitaire UHC
         default: op
