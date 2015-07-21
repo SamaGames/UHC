@@ -1,5 +1,6 @@
 package fr.blueslime.uhc;
 
+import com.google.gson.JsonPrimitive;
 import fr.blueslime.uhc.arena.ArenaCommon;
 import fr.blueslime.uhc.arena.SpawnBlock;
 import fr.blueslime.uhc.commands.CommandAll;
@@ -62,10 +63,10 @@ public class UHC extends JavaPlugin
 
         IGameProperties properties = SamaGamesAPI.get().getGameManager().getGameProperties();
 
-        boolean animatedBorders = Boolean.valueOf(properties.getOption("animated-borders"));
-        boolean teamMode = Boolean.valueOf(properties.getOption("team-mode"));
-        int maxPlayersInTeam = Integer.valueOf(properties.getOption("max-players-in-team"));
-        int teamNumber = Integer.valueOf(properties.getOption("teams"));
+        boolean animatedBorders = properties.getOption("animated-borders", new JsonPrimitive(true)).getAsBoolean();
+        boolean teamMode = properties.getOption("team-mode", new JsonPrimitive(false)).getAsBoolean();
+        int maxPlayersInTeam = properties.getOption("max-players-in-team", new JsonPrimitive(2)).getAsInt();
+        int teamNumber = properties.getOption("teams", new JsonPrimitive(12)).getAsInt();
 
         if(teamNumber > 12)
         {
