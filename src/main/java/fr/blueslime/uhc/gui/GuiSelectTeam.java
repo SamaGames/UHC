@@ -116,7 +116,7 @@ public class GuiSelectTeam extends AbstractGui
 
         if (action.equals("toggle"))
         {
-            if (SamaGamesAPI.get().getPermissionsManager().hasPermission(player, "uhc.teamlock"))
+            if (SamaGamesAPI.get().getPermissionsManager().hasPermission(player.getUniqueId(), "uhc.teamlock"))
             {
                 ArenaPlayer aPlayer = arena.getPlayer(player.getUniqueId());
 
@@ -145,7 +145,7 @@ public class GuiSelectTeam extends AbstractGui
         }
         else if (action.equals("change-team"))
         {
-            if (SamaGamesAPI.get().getPermissionsManager().hasPermission(player, "uhc.teamname"))
+            if (SamaGamesAPI.get().getPermissionsManager().hasPermission(player.getUniqueId(), "uhc.teamname"))
             {
                 final ArenaPlayer aPlayer = arena.getPlayer(player.getUniqueId());
 
@@ -204,7 +204,7 @@ public class GuiSelectTeam extends AbstractGui
         }
         else if (action.equals("invite"))
         {
-            if (SamaGamesAPI.get().getPermissionsManager().hasPermission(player, "uhc.teaminvite"))
+            if (SamaGamesAPI.get().getPermissionsManager().hasPermission(player.getUniqueId(), "uhc.teaminvite"))
             {
                 ArenaPlayer aPlayer = arena.getPlayer(player.getUniqueId());
 
