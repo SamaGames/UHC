@@ -11,7 +11,7 @@ public class UHCWorldInitEvent implements Listener
     @EventHandler
     public void event(WorldInitEvent event)
     {
-        if(event.getWorld().getEnvironment() == World.Environment.THE_END)
+        if(event.getWorld().getEnvironment() == World.Environment.NORMAL)
             UHC.getPlugin().finishInit();
     }
 }

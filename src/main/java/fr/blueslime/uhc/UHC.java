@@ -70,9 +70,6 @@ public class UHC extends JavaPlugin
         SamaGamesAPI.get().getGameManager().registerGame(this.arena);
         SamaGamesAPI.get().getGameManager().setMaxReconnectTime(5);
 
-        this.spawnBlock = new SpawnBlock(this);
-        this.spawnBlock.generate();
-
         Bukkit.addRecipe(this.arena.getMelonRecipe());
     }
     
@@ -80,6 +77,9 @@ public class UHC extends JavaPlugin
     {
         this.arena.setStatus(Status.WAITING_FOR_PLAYERS);
         this.arena.getEasterEggManager().start();
+
+        this.spawnBlock = new SpawnBlock(this);
+        this.spawnBlock.generate();
     }
 
     @Override
