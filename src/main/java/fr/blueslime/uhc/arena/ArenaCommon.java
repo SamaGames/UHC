@@ -74,6 +74,7 @@ public class ArenaCommon extends Game<ArenaPlayer>
         
         new WorldGenerator().begin(this, this.world);
         this.world.getEntities().forEach(org.bukkit.entity.Entity::remove);
+        this.status = Status.STARTING;
         
         this.world.setDifficulty(Difficulty.HARD);
         this.world.setGameRuleValue("doDaylightCycle", "false");

@@ -67,7 +67,6 @@ public class UHC extends JavaPlugin
         else
             this.arena = new ArenaCommon(Bukkit.getWorld("world"), 0, 0, animatedBorders);
 
-        this.arena.setStatus(Status.STARTING);
         SamaGamesAPI.get().getGameManager().registerGame(this.arena);
         SamaGamesAPI.get().getGameManager().setMaxReconnectTime(5);
 
