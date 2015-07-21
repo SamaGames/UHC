@@ -46,12 +46,6 @@ public class UHC extends JavaPlugin
         this.getCommand("all").setExecutor(new CommandAll());
 
         this.registerEvents();
-                
-        this.startTimer = Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), () ->
-        {
-            if(Bukkit.getPluginManager().isPluginEnabled("SamaGamesAPI"))
-                finishInit();
-        }, 20L, 20L);
     }
     
     public void finishInit()
@@ -125,6 +119,7 @@ public class UHC extends JavaPlugin
         Bukkit.getPluginManager().registerEvents(new UHCBlockFromToEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerBucketEmptyEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerPortalEvent(), this);
+        Bukkit.getPluginManager().registerEvents(new UHCWorldInitEvent(), this);
     }
 
     public void patchBiomes()
