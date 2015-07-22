@@ -301,9 +301,9 @@ public class ArenaCommon extends Game<ArenaPlayer>
     }
 
     @Override
-    public void handleLogin(Player player, boolean reconnect)
+    public void handleLogin(Player player)
     {
-        super.handleLogin(player, reconnect);
+        super.handleLogin(player);
 
         player.teleport(new Location(this.world, 0.5D, 162, 0.5D));
 
@@ -326,7 +326,6 @@ public class ArenaCommon extends Game<ArenaPlayer>
     public void handleLogout(Player player)
     {
         super.handleLogout(player);
-
         this.objective.removeReceiver(Bukkit.getOfflinePlayer(player.getUniqueId()));
     }
 
@@ -410,9 +409,7 @@ public class ArenaCommon extends Game<ArenaPlayer>
             }
             catch(Exception ex)
             {
-                GameUtils.broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "Une erreur s'est produite durant la modification de la bordure de map ! Essai manuel...");
                 ex.printStackTrace();
-                
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "worldborder set " + distance);
             }
         }
@@ -425,9 +422,7 @@ public class ArenaCommon extends Game<ArenaPlayer>
             }
             catch(Exception ex)
             {
-                GameUtils.broadcastMessage(ChatColor.RED + "" + ChatColor.BOLD + "Une erreur s'est produite durant la modification de la bordure de map ! Essai manuel...");
                 ex.printStackTrace();
-                
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "worldborder set " + distance + " " + time);
             }
         }
@@ -480,23 +475,23 @@ public class ArenaCommon extends Game<ArenaPlayer>
     
     public void updateScoreboard()
     {
-        int team = -4;
+        int team = 3;
         
-        this.objective.setLine(-1, ChatColor.GRAY + "Jour: " + ChatColor.WHITE + this.episode);
-        this.objective.setLine(-2, ChatColor.WHITE + "");
-        this.objective.setLine(-3, ChatColor.GRAY + "Joueurs: " + ChatColor.WHITE + this.getInGamePlayers().size());
+        this.objective.setLine(0, ChatColor.GRAY + "Jour: " + ChatColor.WHITE + this.episode);
+        this.objective.setLine(1, ChatColor.WHITE + "");
+        this.objective.setLine(2, ChatColor.GRAY + "Joueurs: " + ChatColor.WHITE + this.getInGamePlayers().size());
         
         if(this.arenaType == ArenaType.TEAM)
         {
-            this.objective.setLine(-4, ChatColor.GRAY + "Equipes: " + ChatColor.WHITE + this.getTeamAlive().size());
-            team = -5;
+            this.objective.setLine(3, ChatColor.GRAY + "Equipes: " + ChatColor.WHITE + this.getTeamAlive().size());
+            team = 4;
         }
         
         this.objective.setLine(team, ChatColor.GRAY + "");
-        this.objective.setLine(team - 1, ChatColor.GRAY + "Bordure:");
-        this.objective.setLine(team - 2, ChatColor.WHITE + "-" + String.valueOf(((int) this.worldBorder.getSize()) / 2) + " +" + String.valueOf(((int) this.worldBorder.getSize()) / 2));
-        this.objective.setLine(team - 3, ChatColor.RED + "");
-        this.objective.setLine(team - 4, ChatColor.WHITE + this.formatter.format(this.minutesLeft) + ":" + this.formatter.format(this.secondsLeft));
+        this.objective.setLine(team + 1, ChatColor.GRAY + "Bordure:");
+        this.objective.setLine(team + 2, ChatColor.WHITE + "-" + String.valueOf(((int) this.worldBorder.getSize()) / 2) + " +" + String.valueOf(((int) this.worldBorder.getSize()) / 2));
+        this.objective.setLine(team + 3, ChatColor.RED + "");
+        this.objective.setLine(team + 4, ChatColor.WHITE + this.formatter.format(this.minutesLeft) + ":" + this.formatter.format(this.secondsLeft));
     
         this.objective.updateLines();
     }
