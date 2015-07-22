@@ -109,7 +109,6 @@ public class UHC extends JavaPlugin
         Bukkit.getPluginManager().registerEvents(new UHCPlayerInteractEntityEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerInteractEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPlayerPickupItemEvent(), this);
-        Bukkit.getPluginManager().registerEvents(new UHCPlayerRespawnEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCPotionSplashEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCSignChangeEvent(), this);
         Bukkit.getPluginManager().registerEvents(new UHCBlockFromToEvent(), this);

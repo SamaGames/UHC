@@ -162,6 +162,8 @@ public class ArenaCommon extends Game<ArenaPlayer>
     @Override
     public void startGame()
     {
+        super.startGame();
+
         int i = 0;
 
         for(UUID playerUUID : this.gamePlayers.keySet())
@@ -546,20 +548,6 @@ public class ArenaCommon extends Game<ArenaPlayer>
             this.finishTeam(this.arenaTeams.get(0));
     }
     
-    public void loseRespawn(Player player)
-    {
-        loseHider(player);
-        
-        player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1));
-        player.setGameMode(GameMode.SPECTATOR);
-    }
-    
-    public void loseHider(Player player)
-    {
-        for(ArenaPlayer aPlayer : this.gamePlayers.values())
-            aPlayer.getPlayerIfOnline().hidePlayer(player);
-    }
-    
     public void createTeam(ArenaTeam team)
     {
         this.arenaTeams.add(team);
@@ -649,7 +637,7 @@ public class ArenaCommon extends Game<ArenaPlayer>
 
     public boolean isGameStarted()
     {
-        return (this.status == Status.IN_GAME);
+        return this.status == Status.IN_GAME;
     }
 
     public boolean isFirstMinute()
