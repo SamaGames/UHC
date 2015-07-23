@@ -451,7 +451,7 @@ public class ArenaCommon extends Game<ArenaPlayer>
             winTemplateLines.add(ChatUtils.getCenteredText(ChatColor.GREEN + "Gagnant" + ChatColor.GRAY + " - " + ChatColor.RESET + "Equipe " + team.getChatColor() + team.getName()));
             winTemplateLines.add(players.substring(0, players.length() - 2));
 
-            this.coherenceMachine.getTemplateManager().getCustomWinTemplate().execute(winTemplateLines);
+            this.coherenceMachine.getTemplateManager().getWinMessageTemplate().execute(winTemplateLines);
         }
         
         GameUtils.broadcastSound(Sound.WITHER_DEATH);
