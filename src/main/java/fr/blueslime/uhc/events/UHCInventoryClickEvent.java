@@ -1,7 +1,7 @@
 package fr.blueslime.uhc.events;
 
 import fr.blueslime.uhc.UHC;
-import net.samagames.tools.AbstractGui;
+import net.samagames.api.gui.AbstractGui;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

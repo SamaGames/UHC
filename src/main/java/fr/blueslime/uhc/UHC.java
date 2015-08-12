@@ -10,7 +10,7 @@ import net.minecraft.server.v1_8_R3.*;
 import net.samagames.api.SamaGamesAPI;
 import net.samagames.api.games.IGameProperties;
 import net.samagames.api.games.Status;
-import net.samagames.tools.AbstractGui;
+import net.samagames.api.gui.AbstractGui;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;

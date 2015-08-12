@@ -8,7 +8,7 @@ import fr.blueslime.uhc.arena.ArenaTeam;
 import net.minecraft.server.v1_8_R3.EntityHuman;
 import net.minecraft.server.v1_8_R3.TileEntitySign;
 import net.samagames.api.SamaGamesAPI;
-import net.samagames.tools.AbstractGui;
+import net.samagames.api.gui.AbstractGui;
 import net.samagames.tools.chat.FancyMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
