@@ -53,7 +53,7 @@ public class ArenaCommon extends Game<ArenaPlayer>
 
     public ArenaCommon(World world, int maxPlayersInTeam, int teamNumber, boolean animatedBorders)
     {
-        super("uhc", "UHC", ArenaPlayer.class);
+        super("uhc", "UHC", "La survie en difficulté Hard", ArenaPlayer.class);
 
         this.arenaType = (maxPlayersInTeam == 0 ? ArenaType.SOLO : ArenaType.TEAM);
         this.disconnectLocation = new HashMap<>();
