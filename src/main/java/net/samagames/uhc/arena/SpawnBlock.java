@@ -34,8 +34,9 @@ public class SpawnBlock
             {
                 Vector v = new Vector(0, 200, 0);
                 World worldf = Bukkit.getWorld("world");
+                worldf.loadChunk(0, 0);
                 BukkitWorld BWf = new BukkitWorld(worldf);
-                this.es = new EditSession(BWf, 2000000);
+                this.es = new EditSession(BWf, -1);
                 this.es.setFastMode(true);
                 CuboidClipboard c1 = SchematicFormat.MCEDIT.load(file);
                 c1.paste(this.es, v, true);
@@ -44,12 +45,10 @@ public class SpawnBlock
             {
                 ex.printStackTrace();
             }
-
-            Bukkit.getWorld("world").loadChunk(0, 0);
         }
         else
         {
-            Bukkit.getLogger().severe(("File does not exist."));
+            Bukkit.getLogger().severe("File does not exist.");
         }
     }
     
