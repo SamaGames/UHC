@@ -72,7 +72,6 @@ public class ArenaCommon extends Game<ArenaPlayer>
         this.netherBorder.setCenter(0.0D, 0.0D);
         this.setupWorldBorder(2000, 0, true, false);
         
-        new WorldGenerator().begin(this, this.world);
         this.world.getEntities().forEach(org.bukkit.entity.Entity::remove);
         this.status = Status.STARTING;
         
