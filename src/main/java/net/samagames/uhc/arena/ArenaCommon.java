@@ -295,7 +295,7 @@ public class ArenaCommon extends Game<ArenaPlayer>
     {
         super.handleLogin(player);
 
-        player.teleport(new Location(this.world, 0.5D, 162, 0.5D));
+        player.teleport(new Location(this.world, 0.5D, 200, 0.5D));
 
         this.objective.addReceiver(player);
         this.setupPlayer(player);
