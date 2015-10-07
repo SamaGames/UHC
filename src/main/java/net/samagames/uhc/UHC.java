@@ -113,6 +113,7 @@ public class UHC extends JavaPlugin
         this.getServer().getPluginManager().registerEvents(new UHCPlayerDropItemEvent(), this);
         this.getServer().getPluginManager().registerEvents(new UHCPlayerInteractEntityEvent(), this);
         this.getServer().getPluginManager().registerEvents(new UHCPlayerInteractEvent(), this);
+        this.getServer().getPluginManager().registerEvents(new UHCPlayerMoveEvent(), this);
         this.getServer().getPluginManager().registerEvents(new UHCPlayerPickupItemEvent(), this);
         this.getServer().getPluginManager().registerEvents(new UHCPotionSplashEvent(), this);
         this.getServer().getPluginManager().registerEvents(new UHCSignChangeEvent(), this);
