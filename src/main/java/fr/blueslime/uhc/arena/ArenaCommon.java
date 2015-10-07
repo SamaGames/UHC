@@ -534,7 +534,7 @@ public class ArenaCommon extends Game<ArenaPlayer>
         {
             if(this.getInGamePlayers().size() == 1)
             {
-                this.finishSolo(this.gamePlayers.values().iterator().next());
+                this.finishSolo(this.getInGamePlayers().values().iterator().next());
             }
         }
     }
