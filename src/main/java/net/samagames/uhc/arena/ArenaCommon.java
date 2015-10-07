@@ -5,6 +5,7 @@ import net.samagames.api.games.Status;
 import net.samagames.tools.GameUtils;
 import net.samagames.tools.PlayerUtils;
 import net.samagames.tools.Titles;
+import net.samagames.tools.chat.ActionBarAPI;
 import net.samagames.tools.chat.ChatUtils;
 import net.samagames.tools.scoreboards.ObjectiveSign;
 import net.samagames.uhc.Messages;
@@ -218,17 +219,25 @@ public class ArenaCommon extends Game<ArenaPlayer>
         
         this.firstsTimer = Bukkit.getScheduler().scheduleSyncRepeatingTask(UHC.getPlugin(), new Runnable()
         {
-            private int seconds = 0;
+            private int seconds = 60;
             
             @Override
             public void run()
             {
-                this.seconds++;
+                this.seconds--;
+
+                for(Player player : Bukkit.getOnlinePlayers())
+                    ActionBarAPI.sendMessage(player, ChatColor.RED + "Les dégats seront activés dans " + this.seconds + " seconde" + (this.seconds > 1 ? "s" : "") + " !");
                 
-                if(this.seconds == 60)
+                if(this.seconds == 0)
                 {
                     firstMinute = true;
+
                     Bukkit.broadcastMessage(Messages.damageActivated.toString());
+
+                    for(Player player : Bukkit.getOnlinePlayers())
+                        ActionBarAPI.sendPermanentMessage(player, ChatColor.RED + "Le PvP sera activé au jour 2 !");
+
                     startGameCallback();
                 }
             } 
@@ -243,22 +252,27 @@ public class ArenaCommon extends Game<ArenaPlayer>
 
             this.secondsLeft--;
 
-            if (this.secondsLeft == -1) {
+            if (this.secondsLeft == -1)
+            {
                 this.minutesLeft--;
                 this.secondsLeft = 59;
 
-                if (this.episode == 8 && this.minutesLeft == 10) {
+                if (this.episode == 8 && this.minutesLeft == 10)
+                {
                     if (this.animatedBorders)
                         this.setupWorldBorder(50, 60 * 2, true, true);
-                } else if (episode == 8 && minutesLeft == 8) {
+                }
+                else if (episode == 8 && minutesLeft == 8) {
                     Bukkit.broadcastMessage(Messages.reduced.toString().replace("${COORDS}", "-25 25"));
-                } else if (episode == 8 && minutesLeft == 1) {
+                }
+                else if (episode == 8 && minutesLeft == 1) {
                     EndTimer endTimer = new EndTimer(this);
                     endTimer.start();
                 }
             }
 
-            if (this.minutesLeft == -1) {
+            if (this.minutesLeft == -1)
+            {
                 this.minutesLeft = 20;
                 this.secondsLeft = 0;
 
@@ -267,15 +281,25 @@ public class ArenaCommon extends Game<ArenaPlayer>
                 this.easterEggManager.nextEpisode();
                 this.episode++;
 
-                if (this.episode == 2) {
+                if (this.episode == 2)
+                {
                     this.firstTenMinutes = true;
                     Bukkit.broadcastMessage(Messages.pvpActivated.toString());
-                } else if (episode == 4) {
+
+                    for(Player player : Bukkit.getOnlinePlayers())
+                        ActionBarAPI.removeMessage(player);
+                }
+                else if (episode == 4)
+                {
                     if (this.animatedBorders)
                         this.setupWorldBorder(200, 60 * 60, true, true);
-                } else if (episode == 7) {
+                }
+                else if (episode == 7)
+                {
                     Bukkit.broadcastMessage(Messages.reduced.toString().replace("${COORDS}", "-100 100"));
-                } else if (episode == 8) {
+                }
+                else if (episode == 8)
+                {
                     Bukkit.broadcastMessage(Messages.endOfGameAt.toString());
                 }
             }
