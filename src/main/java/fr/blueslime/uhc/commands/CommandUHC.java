@@ -13,10 +13,6 @@ public class CommandUHC implements CommandExecutor
         {
             switch (strings[0])
             {
-                case "help":
-                    CommandHelp.onCommand(cs, cmnd, string, strings);
-                    break;
-                    
                 case "adminteam":
                     CommandAdminTeam.onCommand(cs, cmnd, string, strings);
                     break;
