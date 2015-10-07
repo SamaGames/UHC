@@ -15,7 +15,7 @@ import net.samagames.uhc.events.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -30,6 +30,7 @@ public class UHC extends JavaPlugin
     private HashMap<UUID, AbstractGui> playersGui;
     private ArenaCommon arena;
     private SpawnBlock spawnBlock;
+    private BukkitTask task;
 
     @Override
     public void onEnable()
@@ -48,22 +49,12 @@ public class UHC extends JavaPlugin
 
         this.registerEvents();
 
-        new BukkitRunnable()
-        {
-            @Override
-            public void run()
-            {
-                if(Bukkit.getPluginManager().isPluginEnabled("WorldEdit"))
-                {
-                    finishInit();
-                    this.cancel();
-                }
-            }
-        }.runTaskTimer(this, 20L, 20L);
+        this.task = Bukkit.getScheduler().runTaskTimer(this, this::finishInit, 20L, 20L);
     }
     
     public void finishInit()
     {
+        this.task.cancel();
 
         IGameProperties properties = SamaGamesAPI.get().getGameManager().getGameProperties();
 
