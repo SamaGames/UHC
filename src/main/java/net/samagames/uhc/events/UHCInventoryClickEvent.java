@@ -1,7 +1,7 @@
 package net.samagames.uhc.events;
 
-import net.samagames.uhc.UHC;
 import net.samagames.api.gui.AbstractGui;
+import net.samagames.uhc.UHC;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

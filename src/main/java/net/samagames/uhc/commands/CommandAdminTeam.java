@@ -1,8 +1,8 @@
 package net.samagames.uhc.commands;
 
 import net.samagames.uhc.UHC;
-import net.samagames.uhc.arena.ArenaTeam;
 import net.samagames.uhc.arena.ArenaCommon;
+import net.samagames.uhc.arena.ArenaTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

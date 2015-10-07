@@ -1,7 +1,7 @@
 package net.samagames.uhc.arena;
 
-import net.samagames.uhc.Messages;
 import net.samagames.api.SamaGamesAPI;
+import net.samagames.uhc.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;

@@ -2,9 +2,9 @@ package net.samagames.uhc.events;
 
 import net.samagames.uhc.Messages;
 import net.samagames.uhc.UHC;
+import net.samagames.uhc.arena.ArenaCommon;
 import net.samagames.uhc.arena.ArenaPlayer;
 import net.samagames.uhc.gui.GuiSelectTeam;
-import net.samagames.uhc.arena.ArenaCommon;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;

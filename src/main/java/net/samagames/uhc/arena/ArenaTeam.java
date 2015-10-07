@@ -1,7 +1,7 @@
 package net.samagames.uhc.arena;
 
-import net.samagames.uhc.UHC;
 import net.samagames.tools.chat.FancyMessage;
+import net.samagames.uhc.UHC;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

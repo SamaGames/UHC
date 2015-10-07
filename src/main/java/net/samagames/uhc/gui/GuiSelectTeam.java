@@ -1,15 +1,15 @@
 package net.samagames.uhc.gui;
 
-import net.samagames.uhc.Messages;
-import net.samagames.uhc.UHC;
-import net.samagames.uhc.arena.ArenaCommon;
-import net.samagames.uhc.arena.ArenaPlayer;
-import net.samagames.uhc.arena.ArenaTeam;
 import net.minecraft.server.v1_8_R3.EntityHuman;
 import net.minecraft.server.v1_8_R3.TileEntitySign;
 import net.samagames.api.SamaGamesAPI;
 import net.samagames.api.gui.AbstractGui;
 import net.samagames.tools.chat.FancyMessage;
+import net.samagames.uhc.Messages;
+import net.samagames.uhc.UHC;
+import net.samagames.uhc.arena.ArenaCommon;
+import net.samagames.uhc.arena.ArenaPlayer;
+import net.samagames.uhc.arena.ArenaTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

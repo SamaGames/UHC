@@ -8,11 +8,11 @@ import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.data.DataException;
 import com.sk89q.worldedit.schematic.SchematicFormat;
 import net.samagames.uhc.UHC;
-import java.io.File;
-import java.io.IOException;
-
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+
+import java.io.File;
+import java.io.IOException;
 
 public class SpawnBlock
 {

@@ -1,8 +1,8 @@
 package net.samagames.uhc.events;
 
+import net.samagames.api.SamaGamesAPI;
 import net.samagames.uhc.UHC;
 import net.samagames.uhc.gui.GuiSelectTeam;
-import net.samagames.api.SamaGamesAPI;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

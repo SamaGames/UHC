@@ -1,10 +1,6 @@
 package net.samagames.uhc.events;
 
 import net.samagames.uhc.utils.OtherUtils;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.Witch;
@@ -13,6 +9,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class UHCPotionSplashEvent implements Listener
 {

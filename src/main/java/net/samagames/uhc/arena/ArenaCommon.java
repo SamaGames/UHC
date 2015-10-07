@@ -1,8 +1,5 @@
 package net.samagames.uhc.arena;
 
-import net.samagames.uhc.Messages;
-import net.samagames.uhc.UHC;
-import net.samagames.uhc.utils.CoinsUtils;
 import net.samagames.api.games.Game;
 import net.samagames.api.games.Status;
 import net.samagames.tools.GameUtils;
@@ -10,6 +7,9 @@ import net.samagames.tools.PlayerUtils;
 import net.samagames.tools.Titles;
 import net.samagames.tools.chat.ChatUtils;
 import net.samagames.tools.scoreboards.ObjectiveSign;
+import net.samagames.uhc.Messages;
+import net.samagames.uhc.UHC;
+import net.samagames.uhc.utils.CoinsUtils;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +25,6 @@ import org.bukkit.scoreboard.Scoreboard;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ArenaCommon extends Game<ArenaPlayer>
 {

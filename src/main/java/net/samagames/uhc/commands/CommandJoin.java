@@ -2,9 +2,9 @@ package net.samagames.uhc.commands;
 
 import net.samagames.uhc.Messages;
 import net.samagames.uhc.UHC;
+import net.samagames.uhc.arena.ArenaCommon;
 import net.samagames.uhc.arena.ArenaPlayer;
 import net.samagames.uhc.arena.ArenaTeam;
-import net.samagames.uhc.arena.ArenaCommon;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;

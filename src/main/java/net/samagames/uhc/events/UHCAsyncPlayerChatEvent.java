@@ -1,8 +1,8 @@
 package net.samagames.uhc.events;
 
 import net.samagames.uhc.UHC;
-import net.samagames.uhc.arena.ArenaPlayer;
 import net.samagames.uhc.arena.ArenaCommon;
+import net.samagames.uhc.arena.ArenaPlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;

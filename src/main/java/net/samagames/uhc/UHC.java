@@ -1,15 +1,16 @@
 package net.samagames.uhc;
 
 import com.google.gson.JsonPrimitive;
-import net.samagames.uhc.arena.ArenaCommon;
-import net.samagames.uhc.arena.SpawnBlock;
-import net.samagames.uhc.commands.CommandAll;
-import net.samagames.uhc.commands.CommandUHC;
 import net.minecraft.server.v1_8_R3.*;
 import net.samagames.api.SamaGamesAPI;
 import net.samagames.api.games.IGameProperties;
 import net.samagames.api.games.Status;
 import net.samagames.api.gui.AbstractGui;
+import net.samagames.uhc.arena.ArenaCommon;
+import net.samagames.uhc.arena.SpawnBlock;
+import net.samagames.uhc.arena.WorldGenerator;
+import net.samagames.uhc.commands.CommandAll;
+import net.samagames.uhc.commands.CommandUHC;
 import net.samagames.uhc.events.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -31,12 +32,12 @@ public class UHC extends JavaPlugin
     @Override
     public void onEnable()
     {
-        super.onEnable();
         plugin = this;
         
         this.playersGui = new HashMap<>();
+
+        new WorldGenerator(this).checkAndDownloadWorld();
         
-        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         this.patchBiomes();
 
         this.saveResource("lobby.schematic", false);
@@ -70,12 +71,6 @@ public class UHC extends JavaPlugin
         SamaGamesAPI.get().getGameManager().setMaxReconnectTime(5);
 
         this.getServer().addRecipe(this.arena.getMelonRecipe());
-    }
-    
-    public void finishGeneration()
-    {
-        this.arena.setStatus(Status.WAITING_FOR_PLAYERS);
-        this.arena.getEasterEggManager().start();
 
         this.spawnBlock = new SpawnBlock(this);
         this.spawnBlock.generate();
