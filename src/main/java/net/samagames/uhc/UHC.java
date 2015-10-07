@@ -31,6 +31,7 @@ public class UHC extends JavaPlugin
     private ArenaCommon arena;
     private SpawnBlock spawnBlock;
     private BukkitTask task;
+    private WorldGenerator generator;
 
     @Override
     public void onEnable()
@@ -39,7 +40,8 @@ public class UHC extends JavaPlugin
         
         this.playersGui = new HashMap<>();
 
-        new WorldGenerator(this).checkAndDownloadWorld();
+        this.generator = new WorldGenerator(this);
+        this.generator.checkAndDownloadWorld();
         
         this.patchBiomes();
 
@@ -68,6 +70,8 @@ public class UHC extends JavaPlugin
             this.getServer().getLogger().severe("[UHC] Team number > 12 ! Setting 8 teams.");
             teamNumber = 8;
         }
+
+        this.generator.begin(this.getServer().getWorld("world"));
 
         if(teamMode)
             this.arena = new ArenaCommon(this.getServer().getWorld("world"), maxPlayersInTeam, teamNumber, animatedBorders);

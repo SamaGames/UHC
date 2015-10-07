@@ -2,8 +2,11 @@ package net.samagames.uhc.arena;
 
 import com.google.gson.JsonElement;
 import net.samagames.api.SamaGamesAPI;
+import net.samagames.api.games.Status;
 import net.samagames.uhc.UHC;
 import org.apache.commons.io.IOUtils;
+import org.bukkit.World;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.*;
 import java.net.URL;
@@ -17,10 +20,57 @@ import java.util.zip.ZipFile;
 public class WorldGenerator
 {
     private final UHC plugin;
+    private int lastShow = -1;
+    private int numberChunk;
 
     public WorldGenerator(UHC plugin)
     {
         this.plugin = plugin;
+    }
+
+    public void begin(final World world)
+    {
+        new BukkitRunnable()
+        {
+            private int todo = (1200 * 1200) / 256;
+            private int x = -600;
+            private int z = -600;
+
+            @Override
+            public void run()
+            {
+                int i = 0;
+                while (i < 50)
+                {
+                    world.getChunkAt(world.getBlockAt(x, 64, z)).load(true);
+                    int percentage = numberChunk * 100 / todo;
+
+                    if (percentage > lastShow && percentage % 10 == 0)
+                    {
+                        lastShow = percentage;
+                        plugin.getLogger().info("Loading chunks (" + percentage + "%)");
+                    }
+
+                    z += 16;
+                    if (z >= 600)
+
+                    {
+                        z = -600;
+                        x += 16;
+                    }
+
+                    if (x >= 600)
+                    {
+                        this.cancel();
+                        plugin.getArena().setStatus(Status.WAITING_FOR_PLAYERS);
+                        return;
+                    }
+
+                    numberChunk++;
+                    i++;
+                }
+            }
+        }.runTaskTimer(this.plugin, 1L, 1L);
     }
 
     public boolean checkAndDownloadWorld()
