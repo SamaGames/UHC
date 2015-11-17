@@ -12,8 +12,6 @@ import net.samagames.survivalapi.modules.craft.DisableNotchAppleModule;
 import net.samagames.survivalapi.modules.craft.DisableSpeckedMelonModule;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.HashMap;
-
 public class UHC extends JavaPlugin
 {
     @Override
@@ -23,9 +21,9 @@ public class UHC extends JavaPlugin
 
         int nb = SamaGamesAPI.get().getGameManager().getGameProperties().getOption("playersPerTeam", new JsonPrimitive(1)).getAsInt();
 
-        SurvivalAPI.get().loadModule(DisableLevelTwoPotionModule.class, new HashMap<String, Object>());
-        SurvivalAPI.get().loadModule(DisableNotchAppleModule.class, new HashMap<String, Object>());
-        SurvivalAPI.get().loadModule(DisableSpeckedMelonModule.class, new HashMap<String, Object>());
+        SurvivalAPI.get().loadModule(DisableLevelTwoPotionModule.class, null);
+        SurvivalAPI.get().loadModule(DisableNotchAppleModule.class, null);
+        SurvivalAPI.get().loadModule(DisableSpeckedMelonModule.class, null);
 
         if (nb > 1)
             game = new SurvivalTeamGame<SurvivalGameLoop>(this, "uhc", "UHC", "La survie en Ultra Hard Core", null, SurvivalGameLoop.class, nb);
