@@ -19,6 +19,8 @@ public class UHC extends JavaPlugin
     {
         SurvivalGame game;
 
+        this.saveResource("lobby.schematic", false);
+
         int nb = SamaGamesAPI.get().getGameManager().getGameProperties().getOption("playersPerTeam", new JsonPrimitive(1)).getAsInt();
 
         SurvivalAPI.get().loadModule(DisableLevelTwoPotionModule.class, null);
