@@ -10,6 +10,7 @@ import net.samagames.survivalapi.game.types.SurvivalTeamGame;
 import net.samagames.survivalapi.modules.craft.DisableLevelTwoPotionModule;
 import net.samagames.survivalapi.modules.craft.DisableNotchAppleModule;
 import net.samagames.survivalapi.modules.craft.DisableSpeckedMelonModule;
+import net.samagames.survivalapi.modules.gameplay.NineSlotsModule;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class UHC extends JavaPlugin
@@ -24,6 +25,7 @@ public class UHC extends JavaPlugin
         SurvivalAPI.get().loadModule(DisableLevelTwoPotionModule.class, null);
         SurvivalAPI.get().loadModule(DisableNotchAppleModule.class, null);
         SurvivalAPI.get().loadModule(DisableSpeckedMelonModule.class, null);
+        SurvivalAPI.get().loadModule(NineSlotsModule.class, null);
 
         if (nb > 1)
             game = new SurvivalTeamGame<SurvivalGameLoop>(this, "uhc", "UHC", "La survie en Ultra Hard Core", null, SurvivalGameLoop.class, nb);
