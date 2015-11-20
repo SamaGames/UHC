@@ -1,8 +1,0 @@
-name: UHCGenerator
-main: net.samagames.uhc.UHCGenerator
-version: 3.0
-
-load: startup
-
-author: BlueSlime
-website: http://samagames.net/
