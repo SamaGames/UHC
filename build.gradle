@@ -1,12 +1,15 @@
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'sonar-runner'
 
-group = 'fr.blueslime'
+group = 'net.samagames'
 version = '3.0.0'
 archivesBaseName = 'UHC'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+compileJava.options.encoding = 'UTF-8'
 
 repositories {
     mavenCentral()
@@ -20,6 +23,24 @@ repositories {
             username sguser
             password sgpass
         }
+    }
+
+    maven {
+        url "http://maven.samagames.net/network/"
+        credentials {
+            username sguser
+            password sgpass
+        }
+    }
+}
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.projectKey", group + "." + archivesBaseName.toString().toLowerCase()
+        property "sonar.projectName", archivesBaseName
+
+        property "sonar.login", sonaruser
+        property "sonar.password", sonarpass
     }
 }
 

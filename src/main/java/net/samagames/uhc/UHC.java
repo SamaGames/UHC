@@ -11,7 +11,6 @@ import net.samagames.survivalapi.modules.craft.DisableLevelTwoPotionModule;
 import net.samagames.survivalapi.modules.craft.DisableNotchAppleModule;
 import net.samagames.survivalapi.modules.craft.DisableSpeckedMelonModule;
 import net.samagames.survivalapi.modules.gameplay.LoveMachineModule;
-import net.samagames.survivalapi.modules.gameplay.NineSlotsModule;
 import net.samagames.survivalapi.modules.gameplay.PersonalBlocksModule;
 import org.bukkit.plugin.java.JavaPlugin;
 
