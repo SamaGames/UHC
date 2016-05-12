@@ -30,9 +30,9 @@ public class UHC extends JavaPlugin
         SurvivalAPI.get().loadModule(LoveMachineModule.class, null);
 
         if (nb > 1)
-            game = new SurvivalTeamGame<SurvivalGameLoop>(this, "uhc", "UHC", "La survie en Ultra Hard Core", null, SurvivalGameLoop.class, nb);
+            game = new SurvivalTeamGame<>(this, "uhc", "UHC", "La survie en Ultra Hard Core", null, SurvivalGameLoop.class, nb);
         else
-            game = new SurvivalSoloGame<SurvivalGameLoop>(this, "uhc", "UHC", "La survie en Ultra Hard Core", null, SurvivalGameLoop.class);
+            game = new SurvivalSoloGame<>(this, "uhc", "UHC", "La survie en Ultra Hard Core", null, SurvivalGameLoop.class);
 
         SamaGamesAPI.get().getGameManager().registerGame(game);
     }
