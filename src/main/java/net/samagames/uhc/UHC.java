@@ -2,6 +2,7 @@ package net.samagames.uhc;
 
 import com.google.gson.JsonPrimitive;
 import net.samagames.api.SamaGamesAPI;
+import net.samagames.api.games.GamesNames;
 import net.samagames.survivalapi.SurvivalAPI;
 import net.samagames.survivalapi.game.SurvivalGame;
 import net.samagames.survivalapi.game.SurvivalGameLoop;
@@ -36,6 +37,8 @@ public class UHC extends JavaPlugin
         else
             game = new SurvivalSoloGame<>(this, "uhc", "UHC", "La survie en Ultra Hard Core", null, SurvivalGameLoop.class);
 
+        SamaGamesAPI.get().getStatsManager().setStatsToLoad(GamesNames.UHC, true);
+        SamaGamesAPI.get().getShopsManager().setShopToLoad(GamesNames.UHC, true);
         SamaGamesAPI.get().getGameManager().setGameStatisticsHelper(new UHCStatisticsHelper());
         SamaGamesAPI.get().getGameManager().registerGame(game);
     }
