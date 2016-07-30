@@ -37,8 +37,8 @@ public class UHC extends JavaPlugin
         else
             game = new SurvivalSoloGame<>(this, "uhc", "UHC", "La survie en Ultra Hard Core", null, SurvivalGameLoop.class);
 
-        SamaGamesAPI.get().getStatsManager().setStatsToLoad(GamesNames.UHC, true);
-        SamaGamesAPI.get().getShopsManager().setShopToLoad(GamesNames.UHC, true);
+        SamaGamesAPI.get().getStatsManager().setStatsToLoad(GamesNames.UHCORIGINAL, true);
+        SamaGamesAPI.get().getShopsManager().setShopToLoad(GamesNames.UHCORIGINAL, true);
         SamaGamesAPI.get().getGameManager().setGameStatisticsHelper(new UHCStatisticsHelper());
         SamaGamesAPI.get().getGameManager().registerGame(game);
     }
