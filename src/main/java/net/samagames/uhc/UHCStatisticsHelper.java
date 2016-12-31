@@ -18,36 +18,36 @@ public class UHCStatisticsHelper implements SurvivalGameStatisticsHelper
     @Override
     public void increaseKills(UUID uuid)
     {
-        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCStatistics().incrByKills(1);
+        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCOriginalStatistics().incrByKills(1);
     }
 
     @Override
     public void increaseDeaths(UUID uuid)
     {
-        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCStatistics().incrByDeaths(1);
+        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCOriginalStatistics().incrByDeaths(1);
     }
 
     @Override
     public void increaseDamages(UUID uuid, double damages)
     {
-        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCStatistics().incrByDamages((int) damages);
+        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCOriginalStatistics().incrByDamages((int) damages);
     }
 
     @Override
     public void increasePlayedTime(UUID uuid, long playedTime)
     {
-        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCStatistics().incrByPlayedTime(playedTime);
+        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCOriginalStatistics().incrByPlayedTime(playedTime);
     }
 
     @Override
     public void increasePlayedGames(UUID uuid)
     {
-        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCStatistics().incrByPlayedGames(1);
+        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCOriginalStatistics().incrByPlayedGames(1);
     }
 
     @Override
     public void increaseWins(UUID uuid)
     {
-        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCStatistics().incrByWins(1);
+        SamaGamesAPI.get().getStatsManager().getPlayerStats(uuid).getUHCOriginalStatistics().incrByWins(1);
     }
 }
